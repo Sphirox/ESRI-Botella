@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    .btn-musica {
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-musica:hover {
+      background-color: #005a9e;
+    }
+  </style>
+</head>
+<body>
+  <audio id="musica" loop>
+    <source src="https://dl.dropboxusercontent.com/scl/fi/ouqun18fqyhnikd30o19y/Qui-n-fuera-Silvio-Rodr-guez-Silvio-.-Ulises-C-mara.mp3?rlkey=bubq5v6pv4ix7kc0s8u0gvzx7&st=wlzve8wv" type="audio/mpeg">
+  </audio>
+
+  <button class="btn-musica" onclick="var a=document.getElementById('musica'); if(a.paused){a.play(); this.innerText='⏸️ Pausar';} else {a.pause(); this.innerText='▶️ Reproducir';}">
+    ▶️ Reproducir
+  </button>
+</body>
+</html>
