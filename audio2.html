@@ -3,35 +3,24 @@
 <head>
 <meta charset="utf-8">
 <style>
-  /* iframe transparente */
-  html, body { background: transparent !important; margin:0; padding:0; }
+  html, body { 
+    background: #bdbdbd !important; 
+    margin: 0; 
+    padding: 0; 
+  }
 
-  /* Reproductor completo, sin fondo */
-  audio { width:100%; background:transparent !important; }
+  audio { 
+    width: 100%; 
+    background: #bdbdbd !important; 
+  }
 
-  /* Blink/WebKit: eliminar el recuadro blanco y sombras del control */
   audio::-webkit-media-controls,
   audio::-webkit-media-controls-enclosure,
   audio::-webkit-media-controls-panel {
-    background:transparent !important;
-    box-shadow:none !important;
+    background: #bdbdbd !important;
+    box-shadow: none !important;
   }
 
-  /* (algunos builds requieren forzar cada sub-control) */
-  audio::-webkit-media-controls-play-button,
-  audio::-webkit-media-controls-mute-button,
-  audio::-webkit-media-controls-timeline,
-  audio::-webkit-media-controls-current-time-display,
-  audio::-webkit-media-controls-time-remaining-display,
-  audio::-webkit-media-controls-volume-slider,
-  audio::-webkit-media-controls-seek-back-button,
-  audio::-webkit-media-controls-seek-forward-button,
-  audio::-webkit-media-controls-fullscreen-button {
-    background:transparent !important;
-    box-shadow:none !important;
-  }
-
-  /* Sugerencia: respetar modo claro/oscuro del sistema */
   :root { color-scheme: light dark; }
 </style>
 </head>
