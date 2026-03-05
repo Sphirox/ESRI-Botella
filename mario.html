@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Platformer</title>
+  <style>
+    :root { --bg:#0b1320; --fg:#e6edf3; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .wrap { display: grid; place-items: center; height: 100%; padding: 10px; box-sizing: border-box; }
+    canvas { width: min(980px, 100%); height: auto; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.45); background: #0d1b2a; }
+    .hud {
+      width: min(980px, 100%); display:flex; gap:10px; justify-content:space-between; align-items:center;
+      font-size: 14px; opacity:.95; margin-top:10px; flex-wrap:wrap;
+    }
+    .pill { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); padding: 6px 10px; border-radius: 999px; }
+    .btn { cursor:pointer; user-select:none; }
+    .btn:hover { background: rgba(255,255,255,.12); }
+    a { color: #7cd4ff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" width="980" height="520" aria-label="Mini platformer"></canvas>
+    <div class="hud">
+      <div class="pill">⬅️➡️ mover · ⬆️/Espacio saltar · R reiniciar</div>
+      <div class="pill">Monedas: <span id="coins">0</span> · Vidas: <span id="lives">3</span> · Estado: <span id="state">Listo</span></div>
+      <div class="pill btn" id="muteBtn" role="button" tabindex="0">🔊 Sonido: ON</div>
+    </div>
+    <div class="hud" style="justify-content:flex-start">
+      <div class="pill" style="opacity:.85">
+        Tip: si lo vas a embeber, usa <strong>height</strong> ≥ 520px en el iframe.
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // --- Canvas ---
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+
+  // --- HUD ---
+  const coinsEl = document.getElementById("coins");
+  const livesEl = document.getElementById("lives");
+  const stateEl = document.getElementById("state");
+  const muteBtn = document.getElementById("muteBtn");
+
+  // --- Simple sound (no copyrighted audio) ---
+  let muted = false;
+  let audioCtx = null;
+  function beep(freq=440, dur=0.06, type="square", gain=0.03) {
+    if (muted) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.value = gain;
+      osc.connect(g);
+      g.connect(audioCtx.destination);
+      osc.start(t0);
+      osc.stop(t0 + dur);
+    } catch {}
+  }
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇 Sonido: OFF" : "🔊 Sonido: ON";
+    beep(muted ? 220 : 660, 0.05, "sine", 0.02);
+  });
+
+  // --- Controls ---
+  const keys = new Set();
+  window.addEventListener("keydown", (e) => {
+    if (["ArrowLeft","ArrowRight","ArrowUp"," ","KeyR"].includes(e.code)) e.preventDefault();
+    keys.add(e.code);
+    // Resume audio context after user gesture (some browsers need this)
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+  }, { passive:false });
+  window.addEventListener("keyup", (e) => keys.delete(e.code));
+
+  // --- World data ---
+  // Rect platform helper
+  const rect = (x,y,w,h) => ({x,y,w,h});
+
+  // Level layout (simple + original)
+  const level = {
+    gravity: 1900,
+    friction: 0.86,
+    platforms: [
+      rect(0, 470, 980, 60),      // ground
+      rect(120, 390, 160, 18),
+      rect(340, 330, 170, 18),
+      rect(560, 280, 170, 18),
+      rect(770, 220, 150, 18),
+
+      rect(30, 300, 80, 18),
+      rect(210, 250, 90, 18),
+      rect(430, 220, 90, 18),
+      rect(650, 200, 90, 18),
+
+      rect(860, 420, 90, 18), // small near end
+    ],
+    hazards: [
+      rect(470, 452, 60, 18), // spike pit (visual only)
+      rect(540, 452, 60, 18),
+    ],
+    goal: rect(920, 160, 34, 310),
+    coins: [
+      {x: 170, y: 350, r: 10, taken:false},
+      {x: 380, y: 290, r: 10, taken:false},
+      {x: 600, y: 240, r: 10, taken:false},
+      {x: 820, y: 180, r: 10, taken:false},
+      {x: 75,  y: 260, r: 10, taken:false},
+      {x: 675, y: 160, r: 10, taken:false},
+    ],
+    enemies: [
+      // simple walkers
+      {x: 360, y: 450, w: 26, h: 22, vx: 90, minX: 320, maxX: 520, alive:true},
+      {x: 700, y: 450, w: 26, h: 22, vx: -80, minX: 620, maxX: 860, alive:true},
+    ]
+  };
+
+  // --- Player ---
+  const player = {
+    x: 60, y: 420, w: 26, h: 34,
+    vx: 0, vy: 0,
+    speed: 520,
+    jump: 720,
+    onGround: false,
+    invuln: 0
+  };
+
+  // --- Game state ---
+  const game = {
+    coins: 0,
+    lives: 3,
+    status: "Listo",
+    won: false,
+    over: false,
+    t: 0
+  };
+
+  function resetLevel(full=false) {
+    player.x = 60; player.y = 420;
+    player.vx = 0; player.vy = 0;
+    player.onGround = false;
+    player.invuln = 0;
+    game.won = false;
+    game.over = false;
+    game.status = "Listo";
+    if (full) {
+      game.coins = 0;
+      game.lives = 3;
+      level.coins.forEach(c => c.taken = false);
+      level.enemies.forEach(e => e.alive = true);
+    }
+    coinsEl.textContent = game.coins;
+    livesEl.textContent = game.lives;
+    stateEl.textContent = game.status;
+  }
+
+  function aabb(a,b){
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+  // Physics collision resolution (axis-separated)
+  function resolvePlatforms(entity, platforms) {
+    // X
+    entity.x += entity.vx * dt;
+    for (const p of platforms) {
+      if (aabb(entity, p)) {
+        if (entity.vx > 0) entity.x = p.x - entity.w;
+        else if (entity.vx < 0) entity.x = p.x + p.w;
+        entity.vx = 0;
+      }
+    }
+    // Y
+    entity.y += entity.vy * dt;
+    entity.onGround = false;
+    for (const p of platforms) {
+      if (aabb(entity, p)) {
+        if (entity.vy > 0) { // falling
+          entity.y = p.y - entity.h;
+          entity.vy = 0;
+          entity.onGround = true;
+        } else if (entity.vy < 0) { // rising
+          entity.y = p.y + p.h;
+          entity.vy = 0;
+        }
+      }
+    }
+  }
+
+  function killPlayer(reason="¡Ups!") {
+    if (player.invuln > 0 || game.over || game.won) return;
+    game.lives -= 1;
+    livesEl.textContent = game.lives;
+    beep(180, 0.12, "sawtooth", 0.03);
+    player.invuln = 1.2;
+    game.status = reason + (game.lives > 0 ? " (pierdes una vida)" : " (Game Over)");
+    stateEl.textContent = game.status;
+
+    if (game.lives <= 0) {
+      game.over = true;
+      game.status = "Game Over — pulsa R";
+      stateEl.textContent = game.status;
+      return;
+    }
+    // Soft reset player position
+    setTimeout(() => {
+      if (!game.over) {
+        player.x = 60; player.y = 420;
+        player.vx = 0; player.vy = 0;
+      }
+    }, 450);
+  }
+
+  function win() {
+    if (game.won) return;
+    game.won = true;
+    game.status = "¡Ganaste! 🎉 Pulsa R para reiniciar";
+    stateEl.textContent = game.status;
+    beep(660, 0.08, "square", 0.03);
+    setTimeout(()=>beep(880, 0.08, "square", 0.03), 100);
+    setTimeout(()=>beep(990, 0.10, "square", 0.03), 220);
+  }
+
+  // --- Loop ---
+  let last = performance.now();
+  let dt = 0;
+
+  function update(now) {
+    dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    game.t += dt;
+
+    // Restart
+    if (keys.has("KeyR")) {
+      resetLevel(false);
+      keys.delete("KeyR");
+    }
+
+    if (!game.over && !game.won) {
+      // Input
+      const left = keys.has("ArrowLeft");
+      const right = keys.has("ArrowRight");
+      const jump = keys.has("ArrowUp") || keys.has("Space");
+
+      // Horizontal
+      if (left && !right) player.vx = -player.speed;
+      else if (right && !left) player.vx = player.speed;
+      else player.vx *= level.friction;
+
+      // Gravity
+      player.vy += level.gravity * dt;
+
+      // Jump
+      if (jump && player.onGround) {
+        player.vy = -player.jump;
+        player.onGround = false;
+        beep(520, 0.05, "square", 0.02);
+      }
+
+      // Move + collide with world bounds
+      resolvePlatforms(player, level.platforms);
+      player.x = clamp(player.x, 0, W - player.w);
+
+      // Fall out
+      if (player.y > H + 200) killPlayer("Caíste");
+
+      // Coins
+      for (const c of level.coins) {
+        if (c.taken) continue;
+        const cx = c.x, cy = c.y, r = c.r;
+        const px = player.x + player.w/2, py = player.y + player.h/2;
+        const d2 = (px-cx)*(px-cx) + (py-cy)*(py-cy);
+        if (d2 < (r + Math.min(player.w, player.h)*0.35) ** 2) {
+          c.taken = true;
+          game.coins += 1;
+          coinsEl.textContent = game.coins;
+          beep(880, 0.04, "sine", 0.03);
+        }
+      }
+
+      // Enemies
+      for (const e of level.enemies) {
+        if (!e.alive) continue;
+        // Move enemy
+        e.x += e.vx * dt;
+        if (e.x < e.minX) { e.x = e.minX; e.vx *= -1; }
+        if (e.x + e.w > e.maxX) { e.x = e.maxX - e.w; e.vx *= -1; }
+
+        // Enemy on ground (simple)
+        // Keep at floor height by snapping to ground platform if overlapping
+        // (We designed enemies on ground level, so minimal logic.)
+        const eRect = {x:e.x,y:e.y,w:e.w,h:e.h};
+        // Collide with player
+        if (aabb(player, eRect)) {
+          // If player is falling and hits top => stomp
+          const playerBottomPrev = (player.y - player.vy*dt) + player.h;
+          const enemyTop = e.y;
+          const falling = player.vy > 0;
+          if (falling && playerBottomPrev <= enemyTop + 6) {
+            e.alive = false;
+            player.vy = -player.jump * 0.55;
+            beep(300, 0.06, "square", 0.03);
+          } else {
+            killPlayer("Te golpearon");
+          }
+        }
+      }
+
+      // Hazards
+      for (const hz of level.hazards) {
+        if (aabb(player, hz)) killPlayer("¡Pinchos!");
+      }
+
+      // Goal
+      if (aabb(player, level.goal) && level.coins.every(c=>c.taken)) {
+        win();
+      } else if (aabb(player, level.goal) && !level.coins.every(c=>c.taken)) {
+        game.status = "Te falta recoger monedas ✨";
+        stateEl.textContent = game.status;
+      } else if (game.status.startsWith("Te falta")) {
+        game.status = "Jugando";
+        stateEl.textContent = game.status;
+      }
+
+      // Invulnerability timer
+      if (player.invuln > 0) player.invuln -= dt;
+    }
+
+    draw();
+    requestAnimationFrame(update);
+  }
+
+  // --- Render ---
+  function drawBackground() {
+    // Sky gradient
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0, "#0b1f3a");
+    g.addColorStop(1, "#071224");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    // Stars
+    ctx.globalAlpha = 0.22;
+    for (let i=0;i<80;i++){
+      const x = (i*97) % W;
+      const y = (i*53) % 220;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(x, y, 2, 2);
+    }
+    ctx.globalAlpha = 1;
+
+    // Hills
+    ctx.fillStyle = "rgba(46, 204, 113, 0.22)";
+    ctx.beginPath();
+    ctx.arc(130, 500, 220, Math.PI, 0);
+    ctx.arc(360, 520, 280, Math.PI, 0);
+    ctx.arc(720, 520, 320, Math.PI, 0);
+    ctx.fill();
+  }
+
+  function drawPlatforms() {
+    for (const p of level.platforms) {
+      // Platform body
+      ctx.fillStyle = "#2a344a";
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      // Top highlight
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      ctx.fillRect(p.x, p.y, p.w, 4);
+      // Edge
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      ctx.strokeRect(p.x+0.5, p.y+0.5, p.w-1, p.h-1);
+    }
+
+    // Hazards (spikes)
+    for (const hz of level.hazards) {
+      ctx.fillStyle = "#b33939";
+      ctx.fillRect(hz.x, hz.y, hz.w, hz.h);
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      for (let x=hz.x; x<hz.x+hz.w; x+=10) {
+        ctx.beginPath();
+        ctx.moveTo(x, hz.y+hz.h);
+        ctx.lineTo(x+5, hz.y);
+        ctx.lineTo(x+10, hz.y+hz.h);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Goal pole
+    const g = level.goal;
+    ctx.fillStyle = "#9b59b6";
+    ctx.fillRect(g.x, g.y, g.w, g.h);
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.fillRect(g.x, g.y, g.w, 6);
+    // Flag
+    ctx.fillStyle = "#f1c40f";
+    ctx.beginPath();
+    ctx.moveTo(g.x+g.w, g.y+20);
+    ctx.lineTo(g.x+g.w+70, g.y+40);
+    ctx.lineTo(g.x+g.w, g.y+60);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawCoins() {
+    for (const c of level.coins) {
+      if (c.taken) continue;
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const wob = 1 + Math.sin(game.t*6 + c.x*0.01)*0.15;
+      ctx.scale(wob, 1);
+      ctx.fillStyle = "#f6d365";
+      ctx.beginPath();
+      ctx.arc(0,0,c.r,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.35)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-3,-3,c.r*0.45,0,Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawEnemies() {
+    for (const e of level.enemies) {
+      if (!e.alive) continue;
+      ctx.fillStyle = "#e74c3c";
+      ctx.fillRect(e.x, e.y, e.w, e.h);
+      // eyes
+      ctx.fillStyle = "#0b1320";
+      ctx.fillRect(e.x + 6, e.y + 7, 4, 4);
+      ctx.fillRect(e.x + e.w - 10, e.y + 7, 4, 4);
+      // feet
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.fillRect(e.x + 2, e.y + e.h - 4, e.w - 4, 4);
+    }
+  }
+
+  function drawPlayer() {
+    // Blink when invulnerable
+    const blink = player.invuln > 0 && Math.floor(game.t*14) % 2 === 0;
+    if (blink) ctx.globalAlpha = 0.35;
+
+    // Body
+    ctx.fillStyle = "#4aa3ff";
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+
+    // Hat/Top
+    ctx.fillStyle = "#f39c12";
+    ctx.fillRect(player.x, player.y, player.w, 8);
+
+    // Face
+    ctx.fillStyle = "#0b1320";
+    ctx.fillRect(player.x + 7, player.y + 14, 4, 4);
+    ctx.fillRect(player.x + player.w - 11, player.y + 14, 4, 4);
+
+    // Shadow
+    if (player.onGround) {
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.ellipse(player.x + player.w/2, player.y + player.h + 6, player.w*0.55, 5, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+  }
+
+  function drawOverlay() {
+    // Top banner
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, 0, W, 44);
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "600 16px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    const needCoins = level.coins.filter(c=>!c.taken).length;
+    const msg = needCoins === 0 ? "Ve al poste para ganar" : `Recoge ${needCoins} moneda(s) y ve al poste`;
+    ctx.fillText(msg, 16, 28);
+
+    if (game.over || game.won) {
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#fff";
+      ctx.font = "800 40px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(game.over ? "GAME OVER" : "¡GANASTE!", W/2, H/2 - 12);
+      ctx.font = "500 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText("Pulsa R para reiniciar", W/2, H/2 + 26);
+      ctx.textAlign = "left";
+    }
+  }
+
+  function draw() {
+    drawBackground();
+    drawPlatforms();
+    drawCoins();
+    drawEnemies();
+    drawPlayer();
+    drawOverlay();
+  }
+
+  resetLevel(true);
+  requestAnimationFrame(update);
+})();
+</script>
+</body>
+</html>
