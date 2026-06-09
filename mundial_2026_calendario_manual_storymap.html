@@ -29,6 +29,7 @@ button{background:#0b65c6;color:#fff;font-weight:800;border:none;cursor:pointer}
 .badge.red{background:#fff1f2;color:#b20b26} .badge.gray{background:#f1f5f9;color:#475569}
 .detail-title{font-size:22px;font-weight:950;margin:0 0 8px} .detail-line{border-top:1px solid var(--line);padding:10px 0;color:#334155} .detail-line strong{display:block;color:#0f172a;margin-bottom:3px}
 .group{margin-bottom:12px;border:1px solid var(--line);border-radius:14px;overflow:hidden} .group h3{margin:0;padding:10px 12px;background:#f8fafc;font-size:15px}
+.team-list{padding:10px 12px;display:grid;gap:8px}.team-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:13px;font-weight:700}.team-num{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#eef5ff;color:#0759b8;font-size:12px;font-weight:900}
 table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px 10px;border-top:1px solid var(--line);text-align:left} th{color:var(--muted);font-size:12px}
 .footer{text-align:center;color:var(--muted);font-size:12px;margin:18px 0 30px} .empty{padding:40px 20px;color:var(--muted);text-align:center}
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px} .tools button{width:auto;padding:10px 12px}
@@ -36,7 +37,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px 10px
 </style>
 </head>
 <body>
-<section class="hero"><h1>Calendario interactivo Mundial 2026</h1><p>Partidos, sedes, fases y grupos en una versión propia para embeber en ArcGIS StoryMaps.</p></section>
+<section class="hero"><h1>Calendario interactivo Mundial 2026</h1><p>Partidos, sedes, fases y grupos</p></section>
 <div class="wrap">
   <div class="controls">
     <div><label>Buscar</label><input id="q" placeholder="Equipo, ciudad o estadio..."></div>
@@ -59,7 +60,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px 10px
     <section class="panel"><div class="panel-head"><h2>Partidos</h2><span id="count" class="badge gray">0 mostrados</span></div><div class="panel-body" id="list"></div></section>
     <aside>
       <section class="panel" style="margin-bottom:16px"><div class="panel-head"><h2>Detalle del partido</h2></div><div class="panel-body" id="detail"><p class="empty">Selecciona un partido para ver fecha, sede y fase.</p></div></section>
-      <section class="panel"><div class="panel-head"><h2>Grupos</h2><span class="badge gray">previo al torneo</span></div><div class="panel-body" id="standings"></div></section>
+      <section class="panel"><div class="panel-head"><h2>Composición de grupos</h2><span class="badge gray">sin puntajes</span></div><div class="panel-body" id="standings"></div></section>
     </aside>
   </div>
   <div class="footer">Datos base cargados manualmente desde el calendario publicado por FIFA/Sky Sports. Horas mostradas en Colombia, calculadas a partir de horarios UK/BST.</div>
@@ -2097,7 +2098,10 @@ function showDetail(m){
 function renderGroups(){
  const cont=$('standings'); cont.innerHTML='';
  Object.entries(groups).forEach(([g,teams])=>{
-  const div=document.createElement('div'); div.className='group'; div.innerHTML=`<h3>Grupo ${g}</h3><table><thead><tr><th>Equipo</th><th>PJ</th><th>PTS</th></tr></thead><tbody>${teams.map(t=>`<tr><td>${t}</td><td>0</td><td>0</td></tr>`).join('')}</tbody></table>`; cont.appendChild(div);
+  const div=document.createElement('div');
+  div.className='group';
+  div.innerHTML=`<h3>Grupo ${g}</h3><div class="team-list">${teams.map((t,i)=>`<div class="team-item"><span class="team-num">${i+1}</span><span>${t}</span></div>`).join('')}</div>`;
+  cont.appendChild(div);
  });
 }
 function download(filename, text, type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();URL.revokeObjectURL(a.href);}
