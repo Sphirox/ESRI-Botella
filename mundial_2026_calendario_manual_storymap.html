@@ -4,6 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Calendario interactivo Mundial 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIINfQjSs2rfwVsOUOMoDQWbXrPPD/kx9h0=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <style>
 :root {
   --blue:#072f64; --blue2:#0b65c6; --red:#c8102e; --bg:#f4f6fa; --card:#fff; --text:#0f172a; --muted:#607087; --line:#e1e7ef;
@@ -33,6 +38,86 @@ button{background:#0b65c6;color:#fff;font-weight:800;border:none;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px 10px;border-top:1px solid var(--line);text-align:left} th{color:var(--muted);font-size:12px}
 .footer{text-align:center;color:var(--muted);font-size:12px;margin:18px 0 30px} .empty{padding:40px 20px;color:var(--muted);text-align:center}
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px} .tools button{width:auto;padding:10px 12px}
+
+
+/* Leaflet essential CSS fallback: evita que los tiles se apilen o tapen el encabezado */
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer { position:absolute; left:0; top:0; }
+.leaflet-container { overflow:hidden; position:relative; outline:0; touch-action:pan-x pan-y; }
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow { user-select:none; -webkit-user-drag:none; }
+.leaflet-tile { width:256px; height:256px; }
+.leaflet-safari .leaflet-tile { image-rendering:-webkit-optimize-contrast; }
+.leaflet-zoom-animated { transform-origin:0 0; }
+.leaflet-interactive { cursor:pointer; }
+.leaflet-grab { cursor:grab; }
+.leaflet-dragging .leaflet-grab { cursor:move; }
+.leaflet-control { position:relative; z-index:800; pointer-events:auto; }
+.leaflet-top, .leaflet-bottom { position:absolute; z-index:1000; pointer-events:none; }
+.leaflet-top { top:0; }
+.leaflet-right { right:0; }
+.leaflet-bottom { bottom:0; }
+.leaflet-left { left:0; }
+.leaflet-control { float:left; clear:both; }
+.leaflet-right .leaflet-control { float:right; }
+.leaflet-top .leaflet-control { margin-top:10px; }
+.leaflet-bottom .leaflet-control { margin-bottom:10px; }
+.leaflet-left .leaflet-control { margin-left:10px; }
+.leaflet-right .leaflet-control { margin-right:10px; }
+.leaflet-control-zoom a {
+  background:#fff; border-bottom:1px solid #ccc; width:26px; height:26px; line-height:26px;
+  display:block; text-align:center; text-decoration:none; color:#000; font-weight:bold;
+}
+.leaflet-control-zoom a:hover { background:#f4f4f4; }
+.leaflet-control-zoom-in { border-top-left-radius:4px; border-top-right-radius:4px; }
+.leaflet-control-zoom-out { border-bottom-left-radius:4px; border-bottom-right-radius:4px; }
+.leaflet-control-attribution {
+  background:rgba(255,255,255,.8); margin:0; padding:0 5px; color:#333; font-size:11px;
+}
+.leaflet-control-attribution a { text-decoration:none; color:#0078a8; }
+.leaflet-popup { position:absolute; text-align:center; margin-bottom:20px; }
+.leaflet-popup-content-wrapper {
+  padding:1px; text-align:left; border-radius:12px; background:white;
+  box-shadow:0 3px 14px rgba(0,0,0,.25);
+}
+.leaflet-popup-content { margin:13px 19px; line-height:1.4; }
+.leaflet-popup-tip-container { width:40px; height:20px; position:absolute; left:50%; margin-left:-20px; overflow:hidden; pointer-events:none; }
+.leaflet-popup-tip {
+  width:17px; height:17px; padding:1px; margin:-10px auto 0; transform:rotate(45deg);
+  background:white; box-shadow:0 3px 14px rgba(0,0,0,.25);
+}
+.leaflet-popup-close-button {
+  position:absolute; top:0; right:0; border:0; text-align:center; width:24px; height:24px;
+  font:16px/24px Tahoma,Verdana,sans-serif; color:#757575; text-decoration:none; background:transparent;
+}
+
+.map-card{margin:4px 0 16px;overflow:hidden}
+.map-card .panel-head{position:relative;z-index:5;background:#fff}
+#stadiumMap{height:430px;width:100%;border-radius:0 0 18px 18px;background:#dce6f2;position:relative;z-index:1}
+.map-note{font-size:12px;color:var(--muted);font-weight:700}
+.venue-popup{font-family:Inter,Arial,Helvetica,sans-serif;min-width:210px}
+.venue-popup h3{margin:0 0 6px;font-size:15px;color:#072f64}
+.venue-popup p{margin:3px 0;font-size:12px;color:#334155}
+.venue-popup button{margin-top:8px;width:100%;border-radius:10px;padding:8px 10px;font-size:12px;background:#0b65c6;color:white;border:0;font-weight:800;cursor:pointer}
+.map-pin{
+  width:28px;height:28px;border-radius:999px;background:#0b65c6;border:3px solid #fff;
+  box-shadow:0 8px 18px rgba(11,101,198,.35);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:12px;font-weight:900;
+}
+.map-pin.mx{background:#c8102e;box-shadow:0 8px 18px rgba(200,16,46,.35)}
+.map-pin.ca{background:#14a7d8;box-shadow:0 8px 18px rgba(20,167,216,.35)}
+.map-pin.dim{background:#94a3b8;box-shadow:0 8px 18px rgba(100,116,139,.25)}
+.leaflet-container{font-family:Inter,Arial,Helvetica,sans-serif}
+
 @media(max-width:920px){.controls,.stats,.grid{grid-template-columns:1fr} .match{grid-template-columns:70px 1fr} .match .badge{grid-column:2}}
 </style>
 </head>
@@ -52,6 +137,15 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:8px 10px
     <div class="stat"><div class="k">Fase de grupos</div><div class="v" id="stGroups">0</div></div>
     <div class="stat"><div class="k">Eliminatorias</div><div class="v" id="stKnock">0</div></div>
   </div>
+
+  <section class="panel map-card">
+    <div class="panel-head">
+      <h2>Mapa de sedes</h2>
+      <span class="map-note">Selecciona una ciudad para filtrar el calendario</span>
+    </div>
+    <div id="stadiumMap"></div>
+  </section>
+
   <div class="tools">
     <button class="secondary" id="exportCsv">Descargar CSV</button>
     <button class="secondary" id="exportJson">Descargar JSON</button>
@@ -2058,6 +2152,93 @@ const groups = {
   K:['Portugal','DR Congo','Uzbekistan','Colombia'],
   L:['England','Croatia','Ghana','Panama']
 };
+
+const venues = {
+  "Mexico City": {city:"Mexico City", label:"Ciudad de México", country:"México", stadium:"Estadio Azteca", lat:19.3029, lng:-99.1505},
+  "Zapopan": {city:"Guadalajara / Zapopan", label:"Guadalajara / Zapopan", country:"México", stadium:"Estadio Akron", lat:20.6818, lng:-103.4629},
+  "Guadalupe": {city:"Monterrey / Guadalupe", label:"Monterrey / Guadalupe", country:"México", stadium:"Estadio BBVA", lat:25.6688, lng:-100.2446},
+  "Toronto": {city:"Toronto", label:"Toronto", country:"Canadá", stadium:"BMO Field", lat:43.6332, lng:-79.4186},
+  "Vancouver": {city:"Vancouver", label:"Vancouver", country:"Canadá", stadium:"BC Place", lat:49.2767, lng:-123.1119},
+  "Los Angeles": {city:"Los Angeles", label:"Los Angeles", country:"Estados Unidos", stadium:"SoFi Stadium", lat:33.9535, lng:-118.3392},
+  "Santa Clara": {city:"San Francisco Bay Area / Santa Clara", label:"San Francisco Bay Area / Santa Clara", country:"Estados Unidos", stadium:"Levi's Stadium", lat:37.4030, lng:-121.9700},
+  "New Jersey": {city:"Nueva York / Nueva Jersey", label:"Nueva York / Nueva Jersey", country:"Estados Unidos", stadium:"MetLife Stadium", lat:40.8135, lng:-74.0745},
+  "Foxborough": {city:"Boston / Foxborough", label:"Boston / Foxborough", country:"Estados Unidos", stadium:"Gillette Stadium", lat:42.0909, lng:-71.2643},
+  "Houston": {city:"Houston", label:"Houston", country:"Estados Unidos", stadium:"NRG Stadium", lat:29.6847, lng:-95.4107},
+  "Arlington": {city:"Dallas / Arlington", label:"Dallas / Arlington", country:"Estados Unidos", stadium:"AT&T Stadium", lat:32.7473, lng:-97.0945},
+  "Philadelphia": {city:"Philadelphia", label:"Philadelphia", country:"Estados Unidos", stadium:"Lincoln Financial Field", lat:39.9008, lng:-75.1675},
+  "Atlanta": {city:"Atlanta", label:"Atlanta", country:"Estados Unidos", stadium:"Mercedes-Benz Stadium", lat:33.7554, lng:-84.4008},
+  "Seattle": {city:"Seattle", label:"Seattle", country:"Estados Unidos", stadium:"Lumen Field", lat:47.5952, lng:-122.3316},
+  "Miami": {city:"Miami", label:"Miami", country:"Estados Unidos", stadium:"Hard Rock Stadium", lat:25.9580, lng:-80.2389},
+  "Kansas City": {city:"Kansas City", label:"Kansas City", country:"Estados Unidos", stadium:"Arrowhead Stadium", lat:39.0489, lng:-94.4839}
+};
+
+let map, venueLayer, venueMarkers = {};
+function initMap(){
+  if(typeof L === 'undefined' || map) return;
+  map = L.map('stadiumMap', {scrollWheelZoom:false}).setView([39.5,-96], 3);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:18,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  venueLayer = L.layerGroup().addTo(map);
+}
+function pinClass(country, isActive){
+  let cls = country === 'México' ? 'mx' : country === 'Canadá' ? 'ca' : '';
+  if(!isActive) cls += ' dim';
+  return cls.trim();
+}
+function markerIcon(country, count){
+  const safeCount = count > 99 ? '99+' : String(count);
+  return L.divIcon({
+    className:'',
+    html:`<div class="map-pin ${pinClass(country, count>0)}">${safeCount}</div>`,
+    iconSize:[28,28],
+    iconAnchor:[14,14],
+    popupAnchor:[0,-14]
+  });
+}
+function updateMap(data){
+  initMap();
+  if(!map || !venueLayer) return;
+  venueLayer.clearLayers();
+  venueMarkers = {};
+  const counts = {};
+  data.forEach(m => { counts[m.city_key] = (counts[m.city_key] || 0) + 1; });
+  Object.entries(venues).forEach(([key,v])=>{
+    const count = counts[key] || 0;
+    const marker = L.marker([v.lat, v.lng], {icon:markerIcon(v.country, count)}).addTo(venueLayer);
+    marker.bindPopup(`<div class="venue-popup">
+      <h3>${v.stadium}</h3>
+      <p><b>Ciudad:</b> ${v.label}</p>
+      <p><b>País:</b> ${v.country}</p>
+      <p><b>Partidos con filtros actuales:</b> ${count}</p>
+      <button onclick="filterVenueFromMap('${v.city.replace(/'/g,"\\'")}')">Filtrar esta sede</button>
+    </div>`);
+    venueMarkers[key] = marker;
+  });
+  const activeKeys = Object.keys(counts).filter(k=>venues[k]);
+  const bounds = activeKeys.length
+    ? L.latLngBounds(activeKeys.map(k=>[venues[k].lat, venues[k].lng]))
+    : L.latLngBounds(Object.values(venues).map(v=>[v.lat,v.lng]));
+  map.fitBounds(bounds.pad(0.18), {animate:true});
+}
+function filterVenueFromMap(cityValue){
+  const select = $('venue');
+  select.value = cityValue;
+  render();
+  setTimeout(()=> {
+    const found = Object.entries(venues).find(([k,v])=>v.city === cityValue);
+    if(found) zoomToVenue(found[0]);
+  }, 80);
+}
+function zoomToVenue(cityKey){
+  initMap();
+  const v = venues[cityKey];
+  if(!map || !v) return;
+  map.setView([v.lat, v.lng], 8, {animate:true});
+  setTimeout(()=>{ if(venueMarkers[cityKey]) venueMarkers[cityKey].openPopup(); }, 250);
+}
+
 const $ = id => document.getElementById(id);
 function uniq(arr){return [...new Set(arr.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));}
 function fillSelect(id, values){ const s=$(id); values.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);}); }
@@ -2077,6 +2258,7 @@ function getFiltered(){
 }
 function render(){
  const data=getFiltered();
+ updateMap(data);
  $('stMatches').textContent=matches.length; $('stVenues').textContent=uniq(matches.map(m=>m.city)).length; $('stGroups').textContent=matches.filter(m=>m.phase==='Fase de grupos').length; $('stKnock').textContent=matches.filter(m=>m.phase!=='Fase de grupos').length;
  $('count').textContent=`${data.length} mostrado(s)`;
  const list=$('list'); list.innerHTML='';
@@ -2088,6 +2270,7 @@ function render(){
  });
 }
 function showDetail(m){
+ zoomToVenue(m.city_key);
  $('detail').innerHTML=`<h3 class="detail-title">${m.home} vs ${m.away}</h3>
  <div class="detail-line"><strong>Fecha y hora Colombia</strong>${labelDate(m)} · ${m.time_colombia}</div>
  <div class="detail-line"><strong>Fase</strong>${m.phase}${m.group?' · Grupo '+m.group:''}</div>
