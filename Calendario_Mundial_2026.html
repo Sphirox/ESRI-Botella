@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Calendario Interactivo Mundial 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://js.arcgis.com">
 <script src="https://js.arcgis.com/4.29/"></script>
 <style>
@@ -90,6 +91,512 @@
     .next-grid{grid-template-columns:1fr}
     .match{grid-template-columns:1fr;}
   }
+
+/* ==========================================================
+   TEMA VISUAL GEOGEEKS / MUNDIAL
+   Inspirado en la imagen de referencia:
+   azul profundo + acentos verde/lima, azul, rojo y amarillo.
+   Solo cambia estilos, no toca datos ni lógica.
+   ========================================================== */
+
+:root{
+  --bg:#062F57 !important;
+  --panel:#083A68 !important;
+  --panel-2:#0A467A !important;
+  --panel-soft:#0D4F89 !important;
+  --text:#F7FBFF !important;
+  --muted:#C9D8E8 !important;
+  --line:rgba(255,255,255,.16) !important;
+  --blue:#1187C9 !important;
+  --green:#8CC63F !important;
+  --lime:#B9E51D !important;
+  --yellow:#FFD91A !important;
+  --red:#C9273D !important;
+  --orange:#FF5A1F !important;
+  --soft:rgba(255,255,255,.08) !important;
+}
+
+html, body{
+  background:var(--bg) !important;
+  color:var(--text) !important;
+}
+
+/* Header */
+.hero{
+  background:var(--bg) !important;
+  border-bottom:1px solid rgba(255,255,255,.10) !important;
+  text-align:center !important;
+  padding:20px 0 26px !important;
+  position:relative !important;
+}
+
+.hero::before{
+  content:"" !important;
+  display:block !important;
+  width:280px !important;
+  height:10px !important;
+  margin:0 auto 18px !important;
+  border-radius:999px !important;
+  background:
+    linear-gradient(90deg,
+      #1187C9 0 23%,
+      transparent 23% 26%,
+      #8CC63F 26% 48%,
+      transparent 48% 51%,
+      #C9273D 51% 73%,
+      transparent 73% 76%,
+      #FFD91A 76% 100%
+    ) !important;
+}
+
+.hero h1{
+  color:#FFFFFF !important;
+  font-family:'Montserrat','Inter','Segoe UI',Arial,sans-serif !important;
+  font-weight:900 !important;
+  letter-spacing:.8px !important;
+  text-shadow:0 2px 8px rgba(0,0,0,.20) !important;
+}
+
+.hero p{
+  color:#D8E8F6 !important;
+  font-weight:700 !important;
+}
+
+/* Layout general */
+.wrap{
+  background:transparent !important;
+}
+
+.filters{
+  background:transparent !important;
+}
+
+.field label{
+  color:#FFFFFF !important;
+}
+
+.field input,
+.field select{
+  background:#FFFFFF !important;
+  color:#102033 !important;
+  border:1px solid rgba(255,255,255,.25) !important;
+  box-shadow:0 6px 16px rgba(0,0,0,.12) !important;
+}
+
+.field input::placeholder{
+  color:#52677D !important;
+}
+
+button,
+#reset{
+  background:var(--orange) !important;
+  color:#FFFFFF !important;
+  box-shadow:0 8px 18px rgba(255,90,31,.22) !important;
+}
+
+/* Tarjetas estadísticas */
+.stat{
+  background:var(--panel) !important;
+  color:var(--text) !important;
+  border:1px solid var(--line) !important;
+  border-top:4px solid var(--blue) !important;
+  box-shadow:0 12px 24px rgba(0,0,0,.16) !important;
+}
+
+.stat:nth-child(2){border-top-color:var(--green) !important;}
+.stat:nth-child(3){border-top-color:var(--yellow) !important;}
+.stat:nth-child(4){border-top-color:var(--red) !important;}
+
+.k,
+.stat .k{
+  color:#FFFFFF !important;
+}
+
+.v,
+.stat .v,
+.stat .num{
+  color:#FFFFFF !important;
+  font-weight:900 !important;
+}
+
+/* Paneles */
+.panel{
+  background:var(--panel) !important;
+  border:1px solid var(--line) !important;
+  box-shadow:0 14px 28px rgba(0,0,0,.18) !important;
+}
+
+.panel-head{
+  background:#072F55 !important;
+  border-bottom:1px solid var(--line) !important;
+}
+
+.panel-head h2{
+  color:#FFFFFF !important;
+  font-weight:900 !important;
+}
+
+.panel-body{
+  background:var(--panel) !important;
+  color:var(--text) !important;
+}
+
+.badge{
+  background:rgba(185,229,29,.12) !important;
+  color:var(--lime) !important;
+  border:1px solid rgba(185,229,29,.42) !important;
+}
+
+/* Próximo partido */
+.next-date{
+  background:#FFFFFF !important;
+  color:#062F57 !important;
+  border:1px solid rgba(255,255,255,.25) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.14) !important;
+}
+
+.next-date .day,
+.next-date .month{
+  color:#062F57 !important;
+}
+
+.next-date .time{
+  color:#1187C9 !important;
+}
+
+.next-info h3{
+  color:#FFFFFF !important;
+}
+
+.next-info p{
+  color:#D8E8F6 !important;
+}
+
+.next-info strong{
+  color:#FFFFFF !important;
+}
+
+/* Listado de partidos */
+.match{
+  background:#FFFFFF !important;
+  color:#102033 !important;
+  border:1px solid rgba(255,255,255,.20) !important;
+  border-left:7px solid var(--blue) !important;
+  box-shadow:0 8px 18px rgba(0,0,0,.13) !important;
+}
+
+.match:nth-child(4n+2){border-left-color:var(--green) !important;}
+.match:nth-child(4n+3){border-left-color:var(--red) !important;}
+.match:nth-child(4n+4){border-left-color:var(--yellow) !important;}
+
+.match:hover{
+  transform:translateY(-1px) !important;
+  box-shadow:0 14px 24px rgba(0,0,0,.18) !important;
+}
+
+.match.active{
+  box-shadow:0 0 0 3px rgba(185,229,29,.35), 0 14px 24px rgba(0,0,0,.18) !important;
+}
+
+.date{
+  background:#F2F6FB !important;
+  color:#062F57 !important;
+  border:1px solid #D7E3EF !important;
+}
+
+.date .small{
+  color:#314A64 !important;
+}
+
+.teams{
+  color:#071C32 !important;
+}
+
+.meta{
+  color:#40556C !important;
+}
+
+.empty{
+  color:#D8E8F6 !important;
+}
+
+/* Detalle */
+.detail-title{
+  color:#FFFFFF !important;
+}
+
+.detail-line{
+  color:#D8E8F6 !important;
+  border-bottom:1px solid rgba(255,255,255,.12) !important;
+}
+
+.detail-line strong{
+  color:#FFFFFF !important;
+}
+
+/* Mapa */
+#stadiumMap{
+  background:#072F55 !important;
+}
+
+.map-note{
+  color:#C9D8E8 !important;
+}
+
+/* Grupos */
+.group{
+  background:#FFFFFF !important;
+  color:#102033 !important;
+  border:1px solid rgba(255,255,255,.22) !important;
+  border-radius:18px !important;
+  box-shadow:0 10px 20px rgba(0,0,0,.13) !important;
+}
+
+.group h3{
+  color:#062F57 !important;
+  font-weight:900 !important;
+}
+
+.standings-note{
+  color:#52677D !important;
+}
+
+.standings-table-wrap{
+  overflow-x:visible !important;
+  width:100% !important;
+}
+
+.standings-table{
+  width:100% !important;
+  min-width:0 !important;
+  table-layout:fixed !important;
+  border-spacing:0 7px !important;
+  font-size:11px !important;
+}
+
+.standings-table th{
+  color:#40556C !important;
+  font-weight:900 !important;
+  padding:4px 3px !important;
+  font-size:10px !important;
+  white-space:nowrap !important;
+}
+
+.standings-table td{
+  background:#F2F6FB !important;
+  color:#102033 !important;
+  border-top:1px solid #D7E3EF !important;
+  border-bottom:1px solid #D7E3EF !important;
+  padding:8px 3px !important;
+  font-size:11px !important;
+  white-space:nowrap !important;
+}
+
+.standings-table td:first-child{
+  border-left:1px solid #D7E3EF !important;
+}
+
+.standings-table td:last-child{
+  border-right:1px solid #D7E3EF !important;
+  color:#062F57 !important;
+  font-weight:950 !important;
+}
+
+.standings-table td:last-child strong{
+  color:#062F57 !important;
+  font-weight:950 !important;
+}
+
+.standings-table td.team-name{
+  font-weight:800 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.team-num{
+  background:#E7F0FA !important;
+  color:#1187C9 !important;
+  font-weight:900 !important;
+}
+
+/* Columna y grupos sin scroll */
+.layout{
+  grid-template-columns:52% 48% !important;
+}
+
+/* Mobile */
+@media (max-width: 1100px){
+  .layout{
+    grid-template-columns:1fr !important;
+  }
+}
+
+@media (max-width: 700px){
+  body{
+    overflow-x:hidden !important;
+  }
+
+  .wrap{
+    width:100% !important;
+    max-width:100% !important;
+    padding:14px !important;
+  }
+
+  .hero{
+    padding:16px 0 20px !important;
+  }
+
+  .hero::before{
+    width:210px !important;
+    height:8px !important;
+    margin-bottom:14px !important;
+  }
+
+  .hero h1{
+    font-size:clamp(23px,7vw,31px) !important;
+    line-height:1.08 !important;
+    max-width:92% !important;
+    margin:0 auto !important;
+  }
+
+  .hero p{
+    font-size:14px !important;
+    max-width:92% !important;
+    margin:8px auto 0 !important;
+  }
+
+  .filters{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+  }
+
+  .filters button{
+    grid-column:1 / -1 !important;
+    width:100% !important;
+  }
+
+  .field input,
+  .field select{
+    height:48px !important;
+    font-size:16px !important;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+  }
+
+  .stat{
+    padding:14px !important;
+    border-radius:16px !important;
+  }
+
+  .panel{
+    border-radius:16px !important;
+  }
+
+  .panel-head{
+    padding:14px !important;
+    gap:8px !important;
+    flex-wrap:wrap !important;
+  }
+
+  .panel-head h2{
+    font-size:18px !important;
+  }
+
+  .badge{
+    width:auto !important;
+    min-width:0 !important;
+    padding:6px 12px !important;
+    font-size:13px !important;
+  }
+
+  .panel-body{
+    padding:14px !important;
+  }
+
+  .next-grid{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  .next-date{
+    width:100% !important;
+    padding:16px 12px !important;
+  }
+
+  .next-info h3{
+    font-size:22px !important;
+    line-height:1.1 !important;
+  }
+
+  .match{
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+    padding:14px !important;
+    border-radius:18px !important;
+    overflow:hidden !important;
+  }
+
+  .match .date{
+    width:100% !important;
+    padding:12px !important;
+    border-radius:16px !important;
+  }
+
+  .match .teams{
+    font-size:18px !important;
+    line-height:1.2 !important;
+    overflow-wrap:break-word !important;
+  }
+
+  .match .meta{
+    font-size:14px !important;
+    line-height:1.35 !important;
+  }
+
+  .match > .badge{
+    justify-self:start !important;
+    width:auto !important;
+    min-width:64px !important;
+    max-width:max-content !important;
+  }
+
+  #stadiumMap{
+    height:260px !important;
+  }
+
+  .detail-line strong{
+    display:block !important;
+    min-width:0 !important;
+    margin-bottom:3px !important;
+  }
+
+  .standings-table{
+    font-size:10px !important;
+    table-layout:fixed !important;
+  }
+
+  .standings-table th{
+    font-size:9px !important;
+    padding:3px 2px !important;
+  }
+
+  .standings-table td{
+    font-size:10px !important;
+    padding:7px 2px !important;
+  }
+
+  .team-num{
+    width:22px !important;
+    height:22px !important;
+    min-width:22px !important;
+    font-size:10px !important;
+  }
+}
+
 </style>
 </head>
 <body>
