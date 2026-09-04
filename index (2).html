@@ -3,134 +3,195 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cuencas sedimentarias · VMM</title>
+<title>Cuencas sedimentarias · Colombia</title>
 
-<!-- Leaflet: no requiere cuenta de ArcGIS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
 :root{
-  --cream:#f3f0e8; --panel:#f7f4ed; --ink:#163a34;
-  --muted:#5e6c68; --teal:#177e89; --line:rgba(22,58,52,.16);
+  --cream:#f3f0e8;
+  --ink:#163a34;
+  --muted:#5f6c68;
+  --teal:#177e89;
+  --line:rgba(22,58,52,.15);
 }
+
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,"Avenir Next",Arial,sans-serif;background:var(--cream);color:var(--ink)}
-body{overflow:hidden}
-.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 390px}
-.map-shell{position:relative;min-width:0;overflow:hidden;background:#d8e4df}
-#map{width:100%;height:100%}
-.map-title{
-  position:absolute;left:28px;top:24px;z-index:900;max-width:340px;
-  padding:14px 16px;background:rgba(247,244,237,.94);
-  backdrop-filter:blur(10px);border-radius:14px;
-  box-shadow:0 10px 30px rgba(21,45,40,.13);pointer-events:none;
+html,body{height:100%;margin:0}
+body{
+  font-family:Inter,"Avenir Next",Avenir,Arial,sans-serif;
+  color:var(--ink);
+  background:#0d3740;
+  overflow:hidden;
 }
-.map-title .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:5px}
-.map-title strong{font-size:19px;line-height:1.2;display:block}
-.panel{height:100%;overflow:auto;padding:20px;background:rgba(247,244,237,.99);border-left:1px solid rgba(22,58,52,.10)}
-.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#ece8df;border-radius:14px;padding:4px;margin-bottom:22px}
-.tab{border:0;background:transparent;color:var(--ink);padding:11px 8px;border-radius:10px;font-size:13px;cursor:pointer}
-.tab.active{background:var(--ink);color:#fff}
-h1{font-size:21px;line-height:1.2;margin:0 0 6px}
-.lead{font-size:13px;line-height:1.45;color:var(--muted);margin:0 0 18px}
-.legend{display:grid;gap:8px}
-.legend-item{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:9px 10px;border:1px solid transparent;border-radius:12px;cursor:pointer;transition:.16s}
-.legend-item:hover,.legend-item.is-active{background:#fff;border-color:var(--line)}
-.swatch{width:26px;height:18px;border-radius:5px;border:1px solid rgba(22,58,52,.16)}
-.swatch.hatch{background:repeating-linear-gradient(135deg,rgba(22,58,52,.35) 0 2px,transparent 2px 6px),#6d8e3e}
-.legend-name{font-size:13px;font-weight:650}
-.legend-arrow{font-size:17px;color:#83918d}
-.divider{height:1px;background:var(--line);margin:18px 0}
-.stat-card{background:linear-gradient(145deg,#153f38,#0f564b);color:#fff;border-radius:16px;padding:18px;display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center}
-.stat-icon{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.09);font-size:25px}
-.stat-big{font-size:37px;font-weight:750;line-height:1}
-.stat-label{font-size:14px;line-height:1.35;color:rgba(255,255,255,.86)}
-.focus-card,.info{margin-top:14px;padding:15px 16px;background:#fff;border:1px solid var(--line);border-radius:14px}
-.focus-card .kicker{color:var(--teal);text-transform:uppercase;font-size:10px;letter-spacing:.16em;font-weight:750}
-.focus-card h2{font-size:18px;margin:5px 0 7px}
-.focus-card p,.info{font-size:13px;line-height:1.48;color:var(--muted)}
-.source{margin:14px 2px 8px;font-size:10.5px;color:#7a8582;line-height:1.4}
-.status{margin:10px 0 16px;padding:10px 12px;border-radius:10px;background:#fff4dc;color:#72591a;font-size:12px;line-height:1.4;border:1px solid #ead6a5}
-.hidden{display:none!important}
 
-.leaflet-control-attribution{font-size:10px}
+#map{position:absolute;inset:0}
 
-@media(max-width:820px){
-  body{overflow:auto}
-  .app{height:auto;min-height:100%;grid-template-columns:1fr;grid-template-rows:58vh auto}
-  .panel{height:auto;border-left:0;border-top:1px solid var(--line);padding:16px}
-  .map-title{left:14px;right:14px;top:14px;max-width:none}
+/* Leyenda flotante compacta */
+.legend-panel{
+  position:absolute;
+  top:18px;
+  right:18px;
+  z-index:900;
+  width:min(285px,calc(100vw - 36px));
+  background:rgba(247,244,237,.90);
+  backdrop-filter:blur(12px) saturate(115%);
+  -webkit-backdrop-filter:blur(12px) saturate(115%);
+  border:1px solid rgba(255,255,255,.55);
+  border-radius:16px;
+  box-shadow:0 14px 38px rgba(10,38,34,.20);
+  padding:14px;
+}
+
+.legend-panel h1{
+  margin:0 0 4px;
+  font-size:15px;
+  line-height:1.2;
+  font-weight:750;
+}
+
+.legend-panel .lead{
+  margin:0 0 10px;
+  font-size:10.5px;
+  line-height:1.35;
+  color:var(--muted);
+}
+
+.legend{
+  display:grid;
+  gap:4px;
+}
+
+.legend-item{
+  display:grid;
+  grid-template-columns:22px 1fr 12px;
+  align-items:center;
+  gap:8px;
+  padding:6px 7px;
+  border-radius:9px;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:.16s ease;
+}
+
+.legend-item:hover,
+.legend-item.is-active{
+  background:rgba(255,255,255,.82);
+  border-color:var(--line);
+}
+
+.swatch{
+  width:20px;
+  height:13px;
+  border-radius:4px;
+  border:1px solid rgba(22,58,52,.15);
+}
+
+.swatch.hatch{
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(22,58,52,.32) 0 2px,
+      transparent 2px 5px
+    ),
+    #6d8e3e;
+}
+
+.legend-name{
+  font-size:10.7px;
+  font-weight:650;
+  line-height:1.1;
+}
+
+.legend-arrow{
+  font-size:13px;
+  color:#82908c;
+  text-align:right;
+}
+
+.source{
+  margin-top:9px;
+  padding-top:8px;
+  border-top:1px solid var(--line);
+  font-size:8.7px;
+  line-height:1.3;
+  color:#7b8682;
+}
+
+/* Etiqueta flotante VMM */
+.vmm-label{
+  background:rgba(247,244,237,.95);
+  color:#173a34;
+  border:1px solid rgba(22,58,52,.12);
+  border-radius:10px;
+  box-shadow:0 8px 22px rgba(18,47,41,.16);
+  padding:7px 9px;
+  font-weight:750;
+  font-size:11px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+
+.leaflet-tooltip.vmm-tooltip{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  padding:0;
+}
+
+.leaflet-tooltip.vmm-tooltip:before{
+  display:none;
+}
+
+/* Reducir controles para que no compitan con StoryMaps */
+.leaflet-control-zoom a{
+  width:28px!important;
+  height:28px!important;
+  line-height:28px!important;
+  font-size:16px!important;
+}
+
+.leaflet-control-attribution{
+  font-size:8px!important;
+  background:rgba(255,255,255,.6)!important;
+}
+
+@media(max-width:720px){
+  .legend-panel{
+    top:auto;
+    bottom:12px;
+    right:12px;
+    left:12px;
+    width:auto;
+    max-height:42vh;
+    overflow:auto;
+    padding:12px;
+  }
+  .legend-panel .lead{display:none}
+  .legend{
+    grid-template-columns:1fr 1fr;
+    gap:3px 8px;
+  }
+  .legend-name{font-size:9.6px}
+  .source{display:none}
 }
 </style>
 </head>
+
 <body>
-<div class="app">
+<div id="map"></div>
 
-<section class="map-shell">
-  <div id="map"></div>
-  <div class="map-title">
-    <div class="eyebrow">03 · Recursos no convencionales</div>
-    <strong>Cuencas sedimentarias de Colombia</strong>
-  </div>
-</section>
-
-<aside class="panel">
-  <div class="tabs">
-    <button class="tab active" data-tab="cuencas">Cuencas</button>
-    <button class="tab" data-tab="subcuencas">Subcuencas</button>
-    <button class="tab" data-tab="interes">Áreas de interés</button>
-  </div>
-
-  <div id="cuencasPane">
-    <h1>Cuencas sedimentarias</h1>
-    <p class="lead">Selecciona una cuenca en la leyenda para acercarte a ella. El Valle Medio del Magdalena se presenta como foco principal.</p>
-
-    <div id="status" class="status">Cargando información cartográfica pública del SGC…</div>
-    <div id="legend" class="legend"></div>
-
-    <div class="divider"></div>
-
-    <div class="stat-card">
-      <div class="stat-icon">⌖</div>
-      <div>
-        <div class="stat-big">8</div>
-        <div class="stat-label">cuencas con potencial de recursos YNC según el borrador narrativo</div>
-      </div>
-    </div>
-
-    <div class="focus-card">
-      <div class="kicker">Foco territorial</div>
-      <h2>Valle Medio del Magdalena</h2>
-      <p>El StoryMap profundiza posteriormente en agua, biodiversidad, Kalé/Platero y evidencia geoquímica del subsuelo.</p>
-    </div>
-
-    <div class="info">
-      <strong>Recurso ≠ reserva.</strong><br>
-      Un recurso potencial no constituye una reserva comercial. Requiere descubrimiento, delimitación y evaluación técnica, ambiental y comercial.
-    </div>
-
-    <div class="source">
-      Cartografía: Servicio Geológico Colombiano · EPIS. Mapa base: Esri World Imagery.
-    </div>
-  </div>
-
-  <div id="placeholderPane" class="hidden">
-    <h1>Vista en construcción</h1>
-    <p class="lead">Estos tabs quedan preparados para conectar Subcuencas y Áreas de interés más adelante.</p>
+<aside class="legend-panel">
+  <h1>Cuencas sedimentarias con potencial YNC</h1>
+  <p class="lead">Selecciona una cuenca para acercarte a ella.</p>
+  <div id="legend" class="legend"></div>
+  <div class="source">
+    Cartografía: Servicio Geológico Colombiano · EPIS. Mapa base: Esri World Imagery.
   </div>
 </aside>
 
-</div>
-
 <script>
-// ------------------------------------------------------
-// CONFIGURACIÓN
-// ------------------------------------------------------
-// Esta versión NO usa ArcGIS Maps SDK ni ArcGIS Online,
-// por lo que no solicita inicio de sesión de Esri.
-// Consume directamente un servicio REST público del SGC.
-
 const serviceBase =
   "https://srvags.sgc.gov.co/arcgis/rest/services/EPIS/EPIS_V2/FeatureServer/5";
 
@@ -148,41 +209,37 @@ const basinStyles = [
 
 const styleByName = Object.fromEntries(basinStyles.map(x=>[x.name,x]));
 const layersByName = {};
+let vmmLine = null;
+let vmmLabelMarker = null;
 
-// ------------------------------------------------------
-// MAPA BASE PÚBLICO - SIN LOGIN
-// ------------------------------------------------------
 const map = L.map("map", {
   zoomControl:true,
   minZoom:4,
-  maxZoom:13
-}).setView([4.7,-74.5],5);
+  maxZoom:13,
+  attributionControl:true
+}).setView([4.5,-74.5],5);
 
-// Mapa base satelital tipo Imagery, sin inicio de sesión.
-const imagery = L.tileLayer(
+// Basemap satelital
+L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
   {
     maxZoom:19,
-    attribution:'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+    attribution:'Tiles © Esri'
   }
 ).addTo(map);
 
-// Capa de referencia opcional con nombres y límites para acercarse al aspecto del mockup.
-// Si prefieres la imagen completamente limpia, comenta este bloque.
-const labels = L.tileLayer(
+// Etiquetas/límites suaves
+L.tileLayer(
   "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
   {
     maxZoom:19,
-    opacity:0.72,
+    opacity:.62,
     attribution:''
   }
 ).addTo(map);
 
-// ------------------------------------------------------
-// LEYENDA PERSONALIZADA
-// ------------------------------------------------------
+// Leyenda personalizada
 const legend = document.getElementById("legend");
-
 basinStyles.forEach(b=>{
   const item=document.createElement("div");
   item.className="legend-item";
@@ -196,44 +253,39 @@ basinStyles.forEach(b=>{
   legend.appendChild(item);
 });
 
-// ------------------------------------------------------
-// CARGA GEOJSON DESDE ARCGIS REST (PÚBLICO)
-// ------------------------------------------------------
 async function loadBasins(){
-  const names = basinStyles.map(b=>`'${b.name.replaceAll("'","''")}'`).join(",");
-  const where = `NOMBRE IN (${names})`;
+  const names=basinStyles
+    .map(b=>`'${b.name.replaceAll("'","''")}'`)
+    .join(",");
+  const where=`NOMBRE IN (${names})`;
 
-  const url = new URL(serviceBase + "/query");
-  url.searchParams.set("where", where);
-  url.searchParams.set("outFields", "NOMBRE");
-  url.searchParams.set("returnGeometry", "true");
-  url.searchParams.set("outSR", "4326");
-  url.searchParams.set("f", "geojson");
+  const url=new URL(serviceBase+"/query");
+  url.searchParams.set("where",where);
+  url.searchParams.set("outFields","NOMBRE");
+  url.searchParams.set("returnGeometry","true");
+  url.searchParams.set("outSR","4326");
+  url.searchParams.set("f","geojson");
 
-  const response = await fetch(url.toString());
-  if(!response.ok) throw new Error("El servicio SGC no respondió como servicio público.");
+  const response=await fetch(url.toString());
+  if(!response.ok) throw new Error("No fue posible consultar el servicio público del SGC.");
 
-  const geojson = await response.json();
+  const geojson=await response.json();
 
-  L.geoJSON(geojson,{
-    style: feature=>{
+  const allLayer=L.geoJSON(geojson,{
+    style:feature=>{
       const name=feature.properties.NOMBRE;
       const s=styleByName[name] || {color:"#94a6a0"};
-      return {
+      return{
         color:"#ffffff",
-        weight:name==="VALLE MEDIO DEL MAGDALENA"?2.5:1.2,
+        weight:name==="VALLE MEDIO DEL MAGDALENA"?2.2:1.05,
         fillColor:s.color,
-        fillOpacity:name==="VALLE MEDIO DEL MAGDALENA"?.72:.52
+        fillOpacity:name==="VALLE MEDIO DEL MAGDALENA"?.70:.47
       };
     },
     onEachFeature:(feature,layer)=>{
       const name=feature.properties.NOMBRE;
       layersByName[name]=layer;
-      layer.bindTooltip(name.replaceAll("_"," "),{
-        sticky:true,
-        direction:"top",
-        className:"basin-tooltip"
-      });
+
       layer.on("click",()=>{
         const item=[...document.querySelectorAll(".legend-item")]
           .find(el=>el.dataset.name===name);
@@ -242,14 +294,46 @@ async function loadBasins(){
     }
   }).addTo(map);
 
-  document.getElementById("status").classList.add("hidden");
+  // IMPORTANTE: al iniciar se muestran TODAS las cuencas, no zoom al VMM.
+  const bounds=allLayer.getBounds();
+  if(bounds.isValid()){
+    map.fitBounds(bounds.pad(.05),{padding:[18,18],maxZoom:5});
+  }
 
-  // Entra al VMM al cargar
-  setTimeout(()=>{
-    const item=[...document.querySelectorAll(".legend-item")]
-      .find(el=>el.dataset.name==="VALLE MEDIO DEL MAGDALENA");
-    focusBasin("VALLE MEDIO DEL MAGDALENA",item);
-  },400);
+  addVmmCallout();
+}
+
+function addVmmCallout(){
+  const layer=layersByName["VALLE MEDIO DEL MAGDALENA"];
+  if(!layer) return;
+
+  const center=layer.getBounds().getCenter();
+
+  // Punto de etiqueta ligeramente al NE para que no cubra la cuenca.
+  const labelLatLng=L.latLng(center.lat+0.75,center.lng+1.0);
+
+  vmmLine=L.polyline(
+    [center,labelLatLng],
+    {color:"#f7f4ed",weight:2,opacity:.95}
+  ).addTo(map);
+
+  L.circleMarker(center,{
+    radius:5,
+    color:"#f7f4ed",
+    weight:2,
+    fillColor:"#ffffff",
+    fillOpacity:1
+  }).addTo(map);
+
+  vmmLabelMarker=L.marker(labelLatLng,{
+    interactive:false,
+    icon:L.divIcon({
+      className:"",
+      html:'<div class="vmm-label">Valle Medio<br>del Magdalena</div>',
+      iconSize:null,
+      iconAnchor:[0,18]
+    })
+  }).addTo(map);
 }
 
 function focusBasin(name,item){
@@ -265,33 +349,12 @@ function focusBasin(name,item){
     maxZoom:8,
     animate:true
   });
-
-  layer.openTooltip();
 }
-
-// ------------------------------------------------------
-// TABS
-// ------------------------------------------------------
-document.querySelectorAll(".tab").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    document.querySelectorAll(".tab")
-      .forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const cuencas=btn.dataset.tab==="cuencas";
-    document.getElementById("cuencasPane")
-      .classList.toggle("hidden",!cuencas);
-    document.getElementById("placeholderPane")
-      .classList.toggle("hidden",cuencas);
-  });
-});
 
 loadBasins().catch(err=>{
   console.error(err);
-  const s=document.getElementById("status");
-  s.innerHTML=
-    "<strong>No fue posible cargar el servicio automáticamente.</strong><br>"+
-    "Esto no es un problema de inicio de sesión de Esri. Revisa que el servicio del SGC permita acceso público/CORS desde el dominio donde alojes esta página.";
+  document.querySelector(".legend-panel .lead").textContent=
+    "No fue posible cargar la cartografía del SGC en este momento.";
 });
 </script>
 </body>
