@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Territorio y sensibilidad ambiental · VMM</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--cream:#f3f0e8;--ink:#163a34;--muted:#64726d;--line:rgba(22,58,52,.14);--water:#2e86c1;--water2:#63b8db;--aquifer:#37b7c8;--kale:#d6543d;--platero:#7156a5}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Inter,"Avenir Next",Avenir,Arial,sans-serif;overflow:hidden;background:#17383d;color:var(--ink)}#map{position:absolute;inset:0}
+.panel{position:absolute;right:16px;top:16px;z-index:900;width:min(278px,calc(100vw - 32px));background:rgba(247,244,237,.90);backdrop-filter:blur(12px) saturate(115%);-webkit-backdrop-filter:blur(12px) saturate(115%);border:1px solid rgba(255,255,255,.58);border-radius:16px;box-shadow:0 16px 42px rgba(9,34,31,.22);padding:13px}
+.panel h1{margin:0 0 3px;font-size:14px;font-weight:760}.panel .sub{margin:0 0 9px;font-size:9.5px;color:var(--muted)}.group{display:grid;gap:3px}.layer-row{display:grid;grid-template-columns:18px 18px 1fr;align-items:center;gap:7px;min-height:29px;padding:4px 6px;border-radius:9px;transition:.15s}.layer-row:hover{background:rgba(255,255,255,.65)}.layer-row input{width:14px;height:14px;margin:0;accent-color:var(--ink)}.symbol{width:17px;height:11px;border-radius:3px}.symbol.line-main{height:4px;border-radius:4px;background:var(--water)}.symbol.line-small{height:2px;border-radius:4px;background:var(--water2)}.symbol.aquifer{background:rgba(55,183,200,.28);border:1.5px solid rgba(55,183,200,.92)}.symbol.fauna{background:linear-gradient(90deg,#f4d27a,#e0833f,#b64e32)}.symbol.flora{background:linear-gradient(90deg,#cbe7b8,#66a85c,#286d42)}.symbol.kale{background:rgba(214,84,61,.25);border:2px solid var(--kale)}.symbol.platero{background:rgba(113,86,165,.24);border:2px solid var(--platero)}.symbol.vmm{background:rgba(243,230,199,.32);border:1.5px dashed #efe7d5}.sep{height:1px;background:var(--line);margin:8px 2px}.actions{display:flex;gap:6px;flex-wrap:wrap}button{border:1px solid var(--line);background:rgba(255,255,255,.67);color:var(--ink);border-radius:9px;padding:6px 8px;font-size:9.5px;font-weight:650;cursor:pointer}button:hover{background:#fff}.note{margin-top:8px;font-size:8.2px;line-height:1.3;color:#7c8884}
+.cepi-label{padding:5px 7px;border-radius:8px;background:rgba(247,244,237,.94);box-shadow:0 6px 18px rgba(12,38,34,.16);font-size:10px;font-weight:760;white-space:nowrap}.gbif-key{position:absolute;left:12px;bottom:24px;z-index:800;display:flex;gap:6px;padding:6px 8px;background:rgba(20,42,40,.72);color:#fff;border-radius:9px;font-size:8px;backdrop-filter:blur(8px)}.gbif-key span{opacity:.88}.leaflet-control-zoom a{width:28px!important;height:28px!important;line-height:28px!important;font-size:16px!important}.leaflet-control-attribution{font-size:7.5px!important;background:rgba(255,255,255,.60)!important}
+
+.map-callout-wrap{position:relative;width:0;height:0;pointer-events:none}
+.map-callout{position:absolute;top:-13px;min-width:max-content;padding:5px 8px;background:rgba(247,244,237,.95);border:1px solid rgba(22,58,52,.14);border-radius:8px;box-shadow:0 5px 15px rgba(13,40,36,.15);color:#173c36;font-size:9.5px;font-weight:760;line-height:1;white-space:nowrap}
+.map-callout::before{content:"";position:absolute;top:50%;width:48px;height:1.5px;background:rgba(247,244,237,.98);box-shadow:0 0 0 .35px rgba(22,58,52,.18)}
+.map-callout.east{left:58px}.map-callout.east::before{right:100%}
+.map-callout.west{right:58px}.map-callout.west::before{left:100%}
+.map-callout-dot{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:#f7f4ed;border:1.5px solid #173c36}
+
+@media(max-width:720px){.panel{top:auto;right:10px;left:10px;bottom:10px;width:auto;max-height:42vh;overflow:auto}.panel .sub,.note{display:none}.group{grid-template-columns:1fr 1fr}.gbif-key{display:none}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<aside class="panel">
+  <h1>Capas del territorio</h1><p class="sub">Activa o desactiva información.</p>
+  <div class="group">
+    <label class="layer-row"><input type="checkbox" data-layer="drainMain" checked><span class="symbol line-main"></span><span>Drenajes principales</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="drainSmall"><span class="symbol line-small"></span><span>Drenajes sencillos</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="aquifer"><span class="symbol aquifer"></span><span>Aguas subterráneas</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="fauna" checked><span class="symbol fauna"></span><span>Fauna · GBIF</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="flora" checked><span class="symbol flora"></span><span>Flora · GBIF</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="kale" checked><span class="symbol kale"></span><span>CEPI Kalé</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="platero" checked><span class="symbol platero"></span><span>CEPI Platero</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="vmm" checked><span class="symbol vmm"></span><span>Cuenca VMM</span></label>
+  </div>
+  <div class="sep"></div>
+  <div class="actions"><button id="reset">Vista inicial</button><button id="onlyBio">Biodiversidad</button><button id="onlyWater">Agua</button></div>
+  <div class="note">GBIF representa densidad de registros de ocurrencia por hexágonos.</div>
+</aside>
+<div class="gbif-key"><span>● Flora: verdes</span><span>● Fauna: cálidos</span></div>
+<script>
+const URLS={
+ ideamMain:"https://dhime.ideam.gov.co/server/rest/services/Cartografia_Basica/Hidrografia/MapServer/1",
+ ideamSmall:"https://dhime.ideam.gov.co/server/rest/services/Cartografia_Basica/Hidrografia/MapServer/0",
+ aquifer:"https://portalsig.anla.gov.co/arcgis/rest/services/Hosted/SistemasAcuiferos_2022/FeatureServer/0",
+ cepi:"https://portalsig.anla.gov.co/publico/rest/services/REGIONALIZACION/Reporte_Sogamoso_Lebrija_2021/MapServer/9",
+ vmm:"https://srvags.sgc.gov.co/arcgis/rest/services/EPIS/EPIS_V2/FeatureServer/5"
+};
+const INITIAL_CENTER=[7.18,-73.88], INITIAL_ZOOM=8, BBOX="-75.30,4.00,-72.35,9.10";
+const map=L.map("map",{zoomControl:true,minZoom:5,maxZoom:15}).setView(INITIAL_CENTER,INITIAL_ZOOM);
+
+// Panes independientes: ahora sí podemos controlar fauna y flora por separado.
+map.createPane("floraPane");
+map.createPane("faunaPane");
+map.getPane("floraPane").style.zIndex="215";
+map.getPane("faunaPane").style.zIndex="225";
+
+// Fauna: bastante más tenue para que NO tape el imagery.
+map.getPane("faunaPane").style.opacity="0.40";
+map.getPane("faunaPane").style.filter="saturate(.78) brightness(.90) contrast(.94)";
+
+// Flora: más verde, más contrastada y claramente visible.
+map.getPane("floraPane").style.opacity="0.46";
+map.getPane("floraPane").style.filter="saturate(1.55) brightness(1.03) contrast(1.08)";
+
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri"}).addTo(map);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.58,attribution:""}).addTo(map);
+
+const fauna=L.tileLayer("https://api.gbif.org/v2/map/occurrence/density/{z}/{x}/{y}@1x.png?srs=EPSG:3857&country=CO&taxonKey=1&bin=hex&hexPerTile=79&style=classic-noborder.poly",{opacity:1,maxZoom:14,pane:"faunaPane"});
+const flora=L.tileLayer("https://api.gbif.org/v2/map/occurrence/density/{z}/{x}/{y}@1x.png?srs=EPSG:3857&country=CO&taxonKey=6&bin=hex&hexPerTile=79&style=green-noborder.poly",{opacity:1,maxZoom:14,pane:"floraPane"});
+fauna.addTo(map); flora.addTo(map);
+
+async function queryGeoJSON(base,{where="1=1",outFields="*",geometry=null,resultRecordCount=null,resultOffset=null}={}){
+ const u=new URL(base+"/query");
+ u.searchParams.set("where",where);
+ u.searchParams.set("outFields",outFields);
+ u.searchParams.set("returnGeometry","true");
+ u.searchParams.set("outSR","4326");
+ u.searchParams.set("f","geojson");
+ if(geometry){u.searchParams.set("geometry",geometry);u.searchParams.set("geometryType","esriGeometryEnvelope");u.searchParams.set("inSR","4326");u.searchParams.set("spatialRel","esriSpatialRelIntersects")}
+ if(resultRecordCount!==null)u.searchParams.set("resultRecordCount",String(resultRecordCount));
+ if(resultOffset!==null)u.searchParams.set("resultOffset",String(resultOffset));
+ const r=await fetch(u.toString());
+ if(!r.ok)throw new Error(base);
+ return await r.json();
+}
+
+async function queryGeoJSONPaged(base,{where="1=1",outFields="*",geometry=null,pageSize=1000,maxPages=40}={}){
+ const features=[];
+ for(let page=0;page<maxPages;page++){
+   const gj=await queryGeoJSON(base,{where,outFields,geometry,resultRecordCount:pageSize,resultOffset:page*pageSize});
+   const batch=gj.features||[];
+   features.push(...batch);
+   if(batch.length<pageSize)break;
+ }
+ return {type:"FeatureCollection",features};
+}
+
+let vmmBounds=null;
+let kaleCenter=null;
+let plateroCenter=null;
+const calloutGroup=L.layerGroup().addTo(map);
+
+function calloutIcon(text,side="east"){
+ return L.divIcon({className:"",iconSize:[0,0],iconAnchor:[0,0],
+  html:`<div class="map-callout-wrap"><span class="map-callout-dot"></span><div class="map-callout ${side}">${text}</div></div>`});
+}
+function addCallout(latlng,text,side="east"){
+ if(latlng)L.marker(latlng,{icon:calloutIcon(text,side),interactive:false}).addTo(calloutGroup);
+}
+function buildInitialCallouts(){
+ calloutGroup.clearLayers();
+ addCallout([7.3483,-73.8967],"Puerto Wilches","west");
+ addCallout([7.21,-73.91],"Río Magdalena","west");
+ if(kaleCenter)addCallout(kaleCenter,"CEPI Kalé","east");
+ if(plateroCenter)addCallout(plateroCenter,"CEPI Platero","east");
+}
+
+const groups={drainMain:L.layerGroup().addTo(map),drainSmall:L.layerGroup(),aquifer:L.layerGroup(),kale:L.layerGroup().addTo(map),platero:L.layerGroup().addTo(map),vmm:L.layerGroup().addTo(map)};
+
+async function loadDrainages(){
+ try{
+   const gj=await queryGeoJSONPaged(URLS.ideamMain,{geometry:BBOX,outFields:"objectid,nombre_geografico",pageSize:1000,maxPages:15});
+   L.geoJSON(gj,{style:{color:"#2e86c1",weight:2.25,opacity:.92},interactive:false}).addTo(groups.drainMain);
+ }catch(e){console.warn("Drenajes principales",e)}
+
+ try{
+   // El servicio IDEAM limita cada respuesta a 1000 registros.
+   // Aquí se pagina hasta completar la red de drenajes sencillos del VMM.
+   const gj=await queryGeoJSONPaged(URLS.ideamSmall,{geometry:BBOX,outFields:"objectid,nombre_geografico",pageSize:1000,maxPages:40});
+   L.geoJSON(gj,{style:{color:"#67bde0",weight:.78,opacity:.54},interactive:false}).addTo(groups.drainSmall);
+ }catch(e){console.warn("Drenajes sencillos",e)}
+}
+async function loadAquifer(){
+ try{const gj=await queryGeoJSON(URLS.aquifer,{where:"sis_acu = 'Valle Medio Del Magdalena'",outFields:"sis_acu"});L.geoJSON(gj,{style:{color:"#37b7c8",weight:1.4,dashArray:"5 4",fillColor:"#37b7c8",fillOpacity:.16},onEachFeature:(f,l)=>l.bindTooltip("Sistema acuífero · Valle Medio del Magdalena")}).addTo(groups.aquifer)}catch(e){console.warn("Acuífero",e)}
+}
+function propsText(p){return Object.values(p||{}).filter(v=>v!=null).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase()}
+function cepiStyle(which){const k=which==="kale";return{color:k?"#d6543d":"#7156a5",weight:2.5,fillColor:k?"#d6543d":"#7156a5",fillOpacity:.20}}
+function addLabel(layer,text,color,group){const c=layer.getBounds().getCenter();L.marker(c,{interactive:false,icon:L.divIcon({className:"",html:`<div class="cepi-label" style="border-left:4px solid ${color}">${text}</div>`,iconSize:null,iconAnchor:[28,12]})}).addTo(group)}
+async function loadCepi(){
+ try{
+  const gj=await queryGeoJSON(URLS.cepi,{outFields:"CONTRAT_ID,CONTRATO_N,AREA_NOMBR,OPERADOR,AREA_HA,CUENCA_SED,YACIMIENTO,PROCESO,LEYENDA"});
+  const k=[],p=[];
+  (gj.features||[]).forEach(f=>{
+    const t=propsText(f.properties);
+    if(t.includes("KALE"))k.push(f);
+    if(t.includes("PLATERO"))p.push(f);
+  });
+
+  if(k.length){
+    const kl=L.geoJSON({type:"FeatureCollection",features:k},{
+      style:cepiStyle("kale"),
+      onEachFeature:(f,l)=>l.bindTooltip("CEPI Kalé")
+    }).addTo(groups.kale);
+    kaleCenter=kl.getBounds().getCenter();
+  }
+
+  if(p.length){
+    const pl=L.geoJSON({type:"FeatureCollection",features:p},{
+      style:cepiStyle("platero"),
+      onEachFeature:(f,l)=>l.bindTooltip("CEPI Platero")
+    }).addTo(groups.platero);
+    plateroCenter=pl.getBounds().getCenter();
+  }
+
+  buildInitialCallouts();
+ }catch(e){console.warn("CEPI",e)}
+}
+async function loadVmm(){
+ try{
+  const gj=await queryGeoJSON(URLS.vmm,{where:"NOMBRE = 'VALLE MEDIO DEL MAGDALENA'",outFields:"NOMBRE"});
+  const vmmLayer=L.geoJSON(gj,{
+   style:{
+    color:"#fff7e8",
+    weight:1.8,
+    dashArray:"7 5",
+    fillColor:"#f3e6c7",
+    fillOpacity:.075,
+    opacity:.88
+   },
+   interactive:false
+  }).addTo(groups.vmm);
+
+  vmmBounds=vmmLayer.getBounds();
+
+  // La vista inicial queda SIEMPRE en la extensión de la cuenca.
+  if(vmmBounds.isValid()){
+   setTimeout(()=>{
+    map.fitBounds(vmmBounds.pad(.035),{
+     paddingTopLeft:[18,18],
+     paddingBottomRight:[305,18],
+     maxZoom:8,
+     animate:false
+    });
+    buildInitialCallouts();
+   },120);
+  }
+ }catch(e){console.warn("VMM",e)}
+}
+
+const external={fauna,flora};
+function setVisible(name,visible){const l=groups[name]||external[name];if(!l)return;if(visible){if(!map.hasLayer(l))l.addTo(map)}else if(map.hasLayer(l))map.removeLayer(l)}
+document.querySelectorAll("[data-layer]").forEach(cb=>cb.addEventListener("change",()=>setVisible(cb.dataset.layer,cb.checked)));
+function preset(active){document.querySelectorAll("[data-layer]").forEach(cb=>{cb.checked=active.includes(cb.dataset.layer);setVisible(cb.dataset.layer,cb.checked)})}
+document.getElementById("reset").onclick=()=>{
+ if(vmmBounds && vmmBounds.isValid()){
+  map.fitBounds(vmmBounds.pad(.035),{
+   paddingTopLeft:[18,18],
+   paddingBottomRight:[305,18],
+   maxZoom:8,
+   animate:true
+  });
+  buildInitialCallouts();
+ }else{
+  map.setView(INITIAL_CENTER,INITIAL_ZOOM);
+ }
+};
+document.getElementById("onlyBio").onclick=()=>preset(["fauna","flora","kale","platero"]);
+document.getElementById("onlyWater").onclick=()=>preset(["drainMain","drainSmall","aquifer","kale","platero"]);
+map.on("zoomend",()=>{
+ if(map.getZoom()<=9){
+   if(!map.hasLayer(calloutGroup))calloutGroup.addTo(map);
+ }else{
+   if(map.hasLayer(calloutGroup))map.removeLayer(calloutGroup);
+ }
+});
+
+Promise.allSettled([loadDrainages(),loadAquifer(),loadCepi(),loadVmm()]);
+</script>
+</body>
+</html>
