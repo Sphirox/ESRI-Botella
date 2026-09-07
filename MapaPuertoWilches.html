@@ -38,19 +38,26 @@
     <label class="layer-row"><input type="checkbox" data-layer="vmm" checked><span class="symbol vmm"></span><span>Cuenca VMM</span></label>
   </div>
   <div class="sep"></div>
-  <div class="actions"><button id="reset">Vista inicial</button><button id="onlyBio">Biodiversidad</button><button id="onlyWater">Agua</button></div>
+  <div class="actions">
+  <button id="reset">Valle Medio</button>
+  <button id="viewVim">Valle Inferior</button>
+  <button id="viewVsm">Valle Superior</button>
+  <button id="onlyBio">Biodiversidad</button>
+  <button id="onlyWater">Agua</button>
+</div>
   <div class="note">GBIF representa densidad de registros de ocurrencia por hexágonos.</div>
 </aside>
 <div class="gbif-key"><span>● Flora: verdes</span><span>● Fauna: cálidos</span></div>
 <script>
 const URLS={
+ ideamRoot:"https://dhime.ideam.gov.co/server/rest/services/Cartografia_Basica/Hidrografia/MapServer",
  ideamMain:"https://dhime.ideam.gov.co/server/rest/services/Cartografia_Basica/Hidrografia/MapServer/1",
  ideamSmall:"https://dhime.ideam.gov.co/server/rest/services/Cartografia_Basica/Hidrografia/MapServer/0",
  aquifer:"https://portalsig.anla.gov.co/arcgis/rest/services/Hosted/SistemasAcuiferos_2022/FeatureServer/0",
  cepi:"https://portalsig.anla.gov.co/publico/rest/services/REGIONALIZACION/Reporte_Sogamoso_Lebrija_2021/MapServer/9",
  vmm:"https://srvags.sgc.gov.co/arcgis/rest/services/EPIS/EPIS_V2/FeatureServer/5"
 };
-const INITIAL_CENTER=[7.18,-73.88], INITIAL_ZOOM=8, BBOX="-75.30,4.00,-72.35,9.10";
+const INITIAL_CENTER=[7.18,-73.88], INITIAL_ZOOM=8;
 const map=L.map("map",{zoomControl:true,minZoom:5,maxZoom:15}).setView(INITIAL_CENTER,INITIAL_ZOOM);
 
 // Panes independientes: ahora sí podemos controlar fauna y flora por separado.
@@ -104,6 +111,8 @@ let vmmBounds=null;
 let kaleCenter=null;
 let plateroCenter=null;
 const calloutGroup=L.layerGroup().addTo(map);
+const cepiLabelGroup=L.layerGroup().addTo(map);
+const focusBasinGroup=L.layerGroup().addTo(map);
 
 function calloutIcon(text,side="east"){
  return L.divIcon({className:"",iconSize:[0,0],iconAnchor:[0,0],
@@ -116,31 +125,170 @@ function buildInitialCallouts(){
  calloutGroup.clearLayers();
  addCallout([7.3483,-73.8967],"Puerto Wilches","west");
  addCallout([7.21,-73.91],"Río Magdalena","west");
- if(kaleCenter)addCallout(kaleCenter,"CEPI Kalé","east");
- if(plateroCenter)addCallout(plateroCenter,"CEPI Platero","east");
 }
 
 const groups={drainMain:L.layerGroup().addTo(map),drainSmall:L.layerGroup(),aquifer:L.layerGroup(),kale:L.layerGroup().addTo(map),platero:L.layerGroup().addTo(map),vmm:L.layerGroup().addTo(map)};
 
-async function loadDrainages(){
- try{
-   const gj=await queryGeoJSONPaged(URLS.ideamMain,{geometry:BBOX,outFields:"objectid,nombre_geografico",pageSize:1000,maxPages:15});
-   L.geoJSON(gj,{style:{color:"#2e86c1",weight:2.25,opacity:.92},interactive:false}).addTo(groups.drainMain);
- }catch(e){console.warn("Drenajes principales",e)}
+let drainageReloadTimer=null;
+let mainDrainOverlay=null;
+let smallDrainOverlay=null;
 
- try{
-   // El servicio IDEAM limita cada respuesta a 1000 registros.
-   // Aquí se pagina hasta completar la red de drenajes sencillos del VMM.
-   const gj=await queryGeoJSONPaged(URLS.ideamSmall,{geometry:BBOX,outFields:"objectid,nombre_geografico",pageSize:1000,maxPages:40});
-   L.geoJSON(gj,{style:{color:"#67bde0",weight:.78,opacity:.54},interactive:false}).addTo(groups.drainSmall);
- }catch(e){console.warn("Drenajes sencillos",e)}
+function drainageExportUrl(layerId){
+  const b=map.getBounds();
+  const size=map.getSize();
+  const u=new URL(URLS.ideamRoot+"/export");
+  u.searchParams.set("bbox",`${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`);
+  u.searchParams.set("bboxSR","4326");
+  u.searchParams.set("imageSR","4326");
+  u.searchParams.set("size",`${Math.max(256,size.x)},${Math.max(256,size.y)}`);
+  u.searchParams.set("format","png32");
+  u.searchParams.set("transparent","true");
+  u.searchParams.set("layers",`show:${layerId}`);
+  u.searchParams.set("f","image");
+  return u.toString();
 }
+
+function renderDrainages(){
+  const bounds=map.getBounds();
+
+  // Los drenajes se renderizan en el servidor del IDEAM.
+  // Así no dependemos del límite de 1000 entidades por consulta.
+  groups.drainMain.clearLayers();
+  groups.drainSmall.clearLayers();
+
+  mainDrainOverlay=L.imageOverlay(
+    drainageExportUrl(1),
+    bounds,
+    {opacity:.92,interactive:false,crossOrigin:false}
+  );
+  smallDrainOverlay=L.imageOverlay(
+    drainageExportUrl(0),
+    bounds,
+    {opacity:.68,interactive:false,crossOrigin:false}
+  );
+
+  mainDrainOverlay.addTo(groups.drainMain);
+  smallDrainOverlay.addTo(groups.drainSmall);
+}
+
+function scheduleDrainageReload(){
+  clearTimeout(drainageReloadTimer);
+  drainageReloadTimer=setTimeout(renderDrainages,180);
+}
+
+// Consulta puntual para identificar el drenaje al hacer clic.
+async function queryDrainAtPoint(base,latlng){
+  const z=map.getZoom();
+  const tol=Math.max(0.00035,0.012/Math.pow(1.55,Math.max(0,z-7)));
+  const env={
+    xmin:latlng.lng-tol,
+    ymin:latlng.lat-tol,
+    xmax:latlng.lng+tol,
+    ymax:latlng.lat+tol,
+    spatialReference:{wkid:4326}
+  };
+
+  const u=new URL(base+"/query");
+  u.searchParams.set("where","1=1");
+  u.searchParams.set("geometry",JSON.stringify(env));
+  u.searchParams.set("geometryType","esriGeometryEnvelope");
+  u.searchParams.set("inSR","4326");
+  u.searchParams.set("spatialRel","esriSpatialRelIntersects");
+  u.searchParams.set("outFields","nombre_geografico");
+  u.searchParams.set("returnGeometry","false");
+  u.searchParams.set("resultRecordCount","5");
+  u.searchParams.set("f","json");
+
+  const r=await fetch(u.toString());
+  if(!r.ok) return [];
+  const j=await r.json();
+  return j.features||[];
+}
+
+map.on("click",async e=>{
+  // Solo consultar capas que estén activas.
+  const checks={
+    main:document.querySelector('[data-layer="drainMain"]')?.checked,
+    small:document.querySelector('[data-layer="drainSmall"]')?.checked
+  };
+  if(!checks.main && !checks.small) return;
+
+  try{
+    const jobs=[];
+    if(checks.main) jobs.push(queryDrainAtPoint(URLS.ideamMain,e.latlng).then(fs=>({type:"Drenaje principal",features:fs})));
+    if(checks.small) jobs.push(queryDrainAtPoint(URLS.ideamSmall,e.latlng).then(fs=>({type:"Drenaje sencillo",features:fs})));
+
+    const results=await Promise.all(jobs);
+    const matches=[];
+    for(const result of results){
+      for(const f of result.features){
+        const name=f?.attributes?.nombre_geografico || f?.attributes?.NOMBRE_GEOGRAFICO || result.type;
+        matches.push({name,type:result.type});
+      }
+    }
+    if(!matches.length) return;
+
+    const unique=[];
+    const seen=new Set();
+    for(const m of matches){
+      const key=`${m.type}|${m.name}`;
+      if(!seen.has(key)){seen.add(key);unique.push(m)}
+    }
+
+    const body=unique.slice(0,4).map(m =>
+      `<div style="margin:2px 0"><strong>${m.name}</strong><br><span style="font-size:10px">${m.type}</span></div>`
+    ).join("");
+
+    L.popup({maxWidth:260})
+      .setLatLng(e.latlng)
+      .setContent(body)
+      .openOn(map);
+  }catch(err){
+    console.warn("Identificación de drenaje",err);
+  }
+});
+
 async function loadAquifer(){
  try{const gj=await queryGeoJSON(URLS.aquifer,{where:"sis_acu = 'Valle Medio Del Magdalena'",outFields:"sis_acu"});L.geoJSON(gj,{style:{color:"#37b7c8",weight:1.4,dashArray:"5 4",fillColor:"#37b7c8",fillOpacity:.16},onEachFeature:(f,l)=>l.bindTooltip("Sistema acuífero · Valle Medio del Magdalena")}).addTo(groups.aquifer)}catch(e){console.warn("Acuífero",e)}
 }
 function propsText(p){return Object.values(p||{}).filter(v=>v!=null).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase()}
 function cepiStyle(which){const k=which==="kale";return{color:k?"#d6543d":"#7156a5",weight:2.5,fillColor:k?"#d6543d":"#7156a5",fillOpacity:.20}}
-function addLabel(layer,text,color,group){const c=layer.getBounds().getCenter();L.marker(c,{interactive:false,icon:L.divIcon({className:"",html:`<div class="cepi-label" style="border-left:4px solid ${color}">${text}</div>`,iconSize:null,iconAnchor:[28,12]})}).addTo(group)}
+function addLabel(layer,text,color,group,side="east"){
+ const c=layer.getBounds().getCenter();
+
+ // Desplaza el rótulo para que no quede encima del polígono.
+ const dx = side==="east" ? 0.14 : -0.14;
+ const labelPos = L.latLng(c.lat+0.02, c.lng+dx);
+
+ // Línea guía entre el CEPI y el rótulo.
+ L.polyline([c,labelPos],{
+   color:color,
+   weight:1.8,
+   opacity:.9,
+   interactive:false
+ }).addTo(group);
+
+ // Punto de anclaje sobre el CEPI.
+ L.circleMarker(c,{
+   radius:3.5,
+   color:color,
+   weight:1.5,
+   fillColor:"#f7f4ed",
+   fillOpacity:1,
+   interactive:false
+ }).addTo(group);
+
+ // Rótulo desplazado.
+ L.marker(labelPos,{
+   interactive:false,
+   icon:L.divIcon({
+     className:"",
+     html:`<div class="cepi-label" style="border-left:4px solid ${color}">${text}</div>`,
+     iconSize:null,
+     iconAnchor: side==="east" ? [0,12] : [84,12]
+   })
+ }).addTo(group);
+}
 async function loadCepi(){
  try{
   const gj=await queryGeoJSON(URLS.cepi,{outFields:"CONTRAT_ID,CONTRATO_N,AREA_NOMBR,OPERADOR,AREA_HA,CUENCA_SED,YACIMIENTO,PROCESO,LEYENDA"});
@@ -157,6 +305,7 @@ async function loadCepi(){
       onEachFeature:(f,l)=>l.bindTooltip("CEPI Kalé")
     }).addTo(groups.kale);
     kaleCenter=kl.getBounds().getCenter();
+    addLabel(kl,"CEPI Kalé","#d6543d",cepiLabelGroup,"east");
   }
 
   if(p.length){
@@ -165,6 +314,7 @@ async function loadCepi(){
       onEachFeature:(f,l)=>l.bindTooltip("CEPI Platero")
     }).addTo(groups.platero);
     plateroCenter=pl.getBounds().getCenter();
+    addLabel(pl,"CEPI Platero","#7156a5",cepiLabelGroup,"east");
   }
 
   buildInitialCallouts();
@@ -202,11 +352,46 @@ async function loadVmm(){
  }catch(e){console.warn("VMM",e)}
 }
 
+
+async function viewBasinByName(name){
+ try{
+  focusBasinGroup.clearLayers();
+  const gj=await queryGeoJSON(URLS.vmm,{where:`NOMBRE = '${name}'`,outFields:"NOMBRE"});
+  const layer=L.geoJSON(gj,{
+   style:{
+    color:"#fff7e8",
+    weight:1.8,
+    dashArray:"7 5",
+    fillColor:"#f3e6c7",
+    fillOpacity:.075,
+    opacity:.88
+   },
+   interactive:false
+  }).addTo(focusBasinGroup);
+
+  const b=layer.getBounds();
+  if(b.isValid()){
+   map.fitBounds(b.pad(.035),{
+    paddingTopLeft:[18,18],
+    paddingBottomRight:[305,18],
+    maxZoom:8,
+    animate:true
+   });
+  }
+ }catch(e){console.warn("Cuenca",name,e)}
+}
+
 const external={fauna,flora};
 function setVisible(name,visible){const l=groups[name]||external[name];if(!l)return;if(visible){if(!map.hasLayer(l))l.addTo(map)}else if(map.hasLayer(l))map.removeLayer(l)}
-document.querySelectorAll("[data-layer]").forEach(cb=>cb.addEventListener("change",()=>setVisible(cb.dataset.layer,cb.checked)));
+document.querySelectorAll("[data-layer]").forEach(cb=>cb.addEventListener("change",()=>{
+ setVisible(cb.dataset.layer,cb.checked);
+ if(cb.checked && (cb.dataset.layer==="drainMain" || cb.dataset.layer==="drainSmall")){
+   renderDrainages();
+ }
+}));
 function preset(active){document.querySelectorAll("[data-layer]").forEach(cb=>{cb.checked=active.includes(cb.dataset.layer);setVisible(cb.dataset.layer,cb.checked)})}
 document.getElementById("reset").onclick=()=>{
+ focusBasinGroup.clearLayers();
  if(vmmBounds && vmmBounds.isValid()){
   map.fitBounds(vmmBounds.pad(.035),{
    paddingTopLeft:[18,18],
@@ -215,12 +400,17 @@ document.getElementById("reset").onclick=()=>{
    animate:true
   });
   buildInitialCallouts();
+  scheduleDrainageReload();
  }else{
   map.setView(INITIAL_CENTER,INITIAL_ZOOM);
  }
 };
+document.getElementById("viewVim").onclick=()=>viewBasinByName("VALLE INFERIOR DEL MAGDALENA");
+document.getElementById("viewVsm").onclick=()=>viewBasinByName("VALLE SUPERIOR DEL MAGDALENA");
 document.getElementById("onlyBio").onclick=()=>preset(["fauna","flora","kale","platero"]);
 document.getElementById("onlyWater").onclick=()=>preset(["drainMain","drainSmall","aquifer","kale","platero"]);
+map.on("moveend",scheduleDrainageReload);
+
 map.on("zoomend",()=>{
  if(map.getZoom()<=9){
    if(!map.hasLayer(calloutGroup))calloutGroup.addTo(map);
@@ -229,7 +419,8 @@ map.on("zoomend",()=>{
  }
 });
 
-Promise.allSettled([loadDrainages(),loadAquifer(),loadCepi(),loadVmm()]);
+Promise.allSettled([loadAquifer(),loadCepi(),loadVmm()]);
+scheduleDrainageReload();
 </script>
 </body>
 </html>
