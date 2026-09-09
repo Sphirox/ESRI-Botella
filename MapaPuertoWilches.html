@@ -11,7 +11,7 @@
 *{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Inter,"Avenir Next",Avenir,Arial,sans-serif;overflow:hidden;background:#17383d;color:var(--ink)}#map{position:absolute;inset:0}
 .panel{position:absolute;right:16px;top:16px;z-index:900;width:min(278px,calc(100vw - 32px));background:rgba(247,244,237,.90);backdrop-filter:blur(12px) saturate(115%);-webkit-backdrop-filter:blur(12px) saturate(115%);border:1px solid rgba(255,255,255,.58);border-radius:16px;box-shadow:0 16px 42px rgba(9,34,31,.22);padding:13px}
 .panel h1{margin:0 0 3px;font-size:14px;font-weight:760}.panel .sub{margin:0 0 9px;font-size:9.5px;color:var(--muted)}.group{display:grid;gap:3px}.layer-row{display:grid;grid-template-columns:18px 18px 1fr;align-items:center;gap:7px;min-height:29px;padding:4px 6px;border-radius:9px;transition:.15s}.layer-row:hover{background:rgba(255,255,255,.65)}.layer-row input{width:14px;height:14px;margin:0;accent-color:var(--ink)}.symbol{width:17px;height:11px;border-radius:3px}.symbol.line-main{height:4px;border-radius:4px;background:var(--water)}.symbol.line-small{height:2px;border-radius:4px;background:var(--water2)}.symbol.aquifer{background:rgba(55,183,200,.28);border:1.5px solid rgba(55,183,200,.92)}.symbol.fauna{background:linear-gradient(90deg,#f4d27a,#e0833f,#b64e32)}.symbol.flora{background:linear-gradient(90deg,#cbe7b8,#66a85c,#286d42)}.symbol.kale{background:rgba(214,84,61,.25);border:2px solid var(--kale)}.symbol.platero{background:rgba(113,86,165,.24);border:2px solid var(--platero)}.symbol.vmm{background:rgba(243,230,199,.32);border:1.5px dashed #efe7d5}.sep{height:1px;background:var(--line);margin:8px 2px}.actions{display:flex;gap:6px;flex-wrap:wrap}button{border:1px solid var(--line);background:rgba(255,255,255,.67);color:var(--ink);border-radius:9px;padding:6px 8px;font-size:9.5px;font-weight:650;cursor:pointer}button:hover{background:#fff}.note{margin-top:8px;font-size:8.2px;line-height:1.3;color:#7c8884}
-.cepi-label{padding:5px 7px;border-radius:8px;background:rgba(247,244,237,.94);box-shadow:0 6px 18px rgba(12,38,34,.16);font-size:10px;font-weight:760;white-space:nowrap}.gbif-key{position:absolute;left:12px;bottom:24px;z-index:800;display:flex;gap:6px;padding:6px 8px;background:rgba(20,42,40,.72);color:#fff;border-radius:9px;font-size:8px;backdrop-filter:blur(8px)}.gbif-key span{opacity:.88}.leaflet-control-zoom a{width:28px!important;height:28px!important;line-height:28px!important;font-size:16px!important}.leaflet-control-attribution{font-size:7.5px!important;background:rgba(255,255,255,.60)!important}
+.cepi-label{padding:5px 7px;border-radius:8px;background:rgba(247,244,237,.94);box-shadow:0 6px 18px rgba(12,38,34,.16);font-size:10px;font-weight:760;white-space:nowrap}.gbif-key{position:absolute;left:12px;bottom:138px;z-index:800;display:flex;gap:6px;padding:6px 8px;background:rgba(20,42,40,.72);color:#fff;border-radius:9px;font-size:8px;backdrop-filter:blur(8px)}.gbif-key span{opacity:.88}.leaflet-control-zoom a{width:28px!important;height:28px!important;line-height:28px!important;font-size:16px!important}.leaflet-control-attribution{font-size:7.5px!important;background:rgba(255,255,255,.60)!important}
 
 .map-callout-wrap{position:relative;width:0;height:0;pointer-events:none}
 .map-callout{position:absolute;top:-13px;min-width:max-content;padding:5px 8px;background:rgba(247,244,237,.95);border:1px solid rgba(22,58,52,.14);border-radius:8px;box-shadow:0 5px 15px rgba(13,40,36,.15);color:#173c36;font-size:9.5px;font-weight:760;line-height:1;white-space:nowrap}
@@ -20,11 +20,95 @@
 .map-callout.west{right:58px}.map-callout.west::before{left:100%}
 .map-callout-dot{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:#f7f4ed;border:1.5px solid #173c36}
 
-@media(max-width:720px){.panel{top:auto;right:10px;left:10px;bottom:10px;width:auto;max-height:42vh;overflow:auto}.panel .sub,.note{display:none}.group{grid-template-columns:1fr 1fr}.gbif-key{display:none}}
+
+
+
+.bottom-indicators{
+  position:absolute;
+  left:50%;
+  bottom:16px;
+  transform:translateX(-50%);
+  z-index:890;
+  width:min(760px,calc(100vw - 34px));
+  background:rgba(247,244,237,.92);
+  backdrop-filter:blur(12px) saturate(115%);
+  -webkit-backdrop-filter:blur(12px) saturate(115%);
+  border:1px solid rgba(255,255,255,.58);
+  border-radius:16px;
+  box-shadow:0 14px 36px rgba(9,34,31,.22);
+  padding:10px 12px 9px;
+}
+.bottom-indicators-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.bottom-indicators-title{
+  font-size:12px;
+  font-weight:780;
+  color:var(--ink);
+}
+.bottom-indicators-basin{
+  font-size:10.5px;
+  font-weight:650;
+  color:var(--muted);
+  text-align:right;
+}
+.bottom-indicator-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.bottom-indicator-card{
+  min-width:0;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(22,58,52,.10);
+  border-radius:11px;
+  padding:9px 10px;
+}
+.bottom-indicator-value{
+  display:block;
+  font-size:21px;
+  line-height:1;
+  font-weight:800;
+  color:var(--ink);
+  margin-bottom:4px;
+}
+.bottom-indicator-label{
+  display:block;
+  font-size:9.7px;
+  line-height:1.15;
+  color:var(--muted);
+}
+.bottom-indicators-note{
+  margin-top:6px;
+  font-size:8px;
+  color:#7d8884;
+  text-align:right;
+}
+
+
+.drain-status{position:absolute;left:12px;top:12px;z-index:880;padding:5px 8px;border-radius:8px;background:rgba(20,42,40,.74);color:#fff;font-size:8.5px;line-height:1;backdrop-filter:blur(7px);display:none}
+.drain-status.show{display:block}
+
+@media(max-width:720px){
+.panel{top:10px;right:10px;left:auto;bottom:auto;width:min(250px,calc(100vw - 20px));max-height:40vh;overflow:auto}
+.panel .sub,.note{display:none}
+.group{grid-template-columns:1fr}
+.gbif-key{display:none}
+.bottom-indicators{left:10px;right:10px;bottom:10px;transform:none;width:auto}
+.bottom-indicator-grid{grid-template-columns:1fr 1fr}
+.bottom-indicator-value{font-size:18px}
+.bottom-indicator-label{font-size:8.8px}
+.bottom-indicators-note{display:none}
+}
 </style>
 </head>
 <body>
 <div id="map"></div>
+<div id="drainStatus" class="drain-status">Cargando drenajes principales…</div>
 <aside class="panel">
   <h1>Capas del territorio</h1><p class="sub">Activa o desactiva información.</p>
   <div class="group">
@@ -39,14 +123,40 @@
   </div>
   <div class="sep"></div>
   <div class="actions">
+  <button id="viewColombia">Colombia</button>
   <button id="reset">Valle Medio</button>
   <button id="viewVim">Valle Inferior</button>
   <button id="viewVsm">Valle Superior</button>
   <button id="onlyBio">Biodiversidad</button>
   <button id="onlyWater">Agua</button>
 </div>
-  <div class="note">GBIF representa densidad de registros de ocurrencia por hexágonos.</div>
+  <div class="note">Activa capas y cambia de cuenca con los botones.</div>
 </aside>
+<div class="bottom-indicators" id="indicators">
+  <div class="bottom-indicators-head">
+    <span class="bottom-indicators-title">Indicadores de cuenca</span>
+    <span class="bottom-indicators-basin" id="indicatorBasin">Valle Medio del Magdalena</span>
+  </div>
+  <div class="bottom-indicator-grid">
+    <div class="bottom-indicator-card">
+      <span class="bottom-indicator-value" id="indMain">—</span>
+      <span class="bottom-indicator-label">Drenajes principales</span>
+    </div>
+    <div class="bottom-indicator-card">
+      <span class="bottom-indicator-value" id="indSmall">—</span>
+      <span class="bottom-indicator-label">Drenajes sencillos</span>
+    </div>
+    <div class="bottom-indicator-card">
+      <span class="bottom-indicator-value" id="indGround">—</span>
+      <span class="bottom-indicator-label">Aguas subterráneas</span>
+    </div>
+    <div class="bottom-indicator-card">
+      <span class="bottom-indicator-value" id="indBio">—</span>
+      <span class="bottom-indicator-label">Registros GBIF fauna / flora*</span>
+    </div>
+  </div>
+  <div class="bottom-indicators-note">*Registros de ocurrencia; no equivalen a abundancia.</div>
+</div>
 <div class="gbif-key"><span>● Flora: verdes</span><span>● Fauna: cálidos</span></div>
 <script>
 const URLS={
@@ -58,7 +168,7 @@ const URLS={
  vmm:"https://srvags.sgc.gov.co/arcgis/rest/services/EPIS/EPIS_V2/FeatureServer/5"
 };
 const INITIAL_CENTER=[7.18,-73.88], INITIAL_ZOOM=8;
-const map=L.map("map",{zoomControl:true,minZoom:5,maxZoom:15}).setView(INITIAL_CENTER,INITIAL_ZOOM);
+const map=L.map("map",{zoomControl:true,minZoom:4,maxZoom:15}).setView(INITIAL_CENTER,INITIAL_ZOOM);
 
 // Panes independientes: ahora sí podemos controlar fauna y flora por separado.
 map.createPane("floraPane");
@@ -113,6 +223,7 @@ let plateroCenter=null;
 const calloutGroup=L.layerGroup().addTo(map);
 const cepiLabelGroup=L.layerGroup().addTo(map);
 const focusBasinGroup=L.layerGroup().addTo(map);
+let principalDrainLoadToken=0;
 
 function calloutIcon(text,side="east"){
  return L.divIcon({className:"",iconSize:[0,0],iconAnchor:[0,0],
@@ -130,7 +241,6 @@ function buildInitialCallouts(){
 const groups={drainMain:L.layerGroup().addTo(map),drainSmall:L.layerGroup(),aquifer:L.layerGroup(),kale:L.layerGroup().addTo(map),platero:L.layerGroup().addTo(map),vmm:L.layerGroup().addTo(map)};
 
 let drainageReloadTimer=null;
-let mainDrainOverlay=null;
 let smallDrainOverlay=null;
 
 function drainageExportUrl(layerId){
@@ -148,32 +258,138 @@ function drainageExportUrl(layerId){
   return u.toString();
 }
 
-function renderDrainages(){
-  const bounds=map.getBounds();
+function principalGeneralization(){
+  const z=map.getZoom();
+  if(z<=4) return 0.035;
+  if(z===5) return 0.020;
+  if(z===6) return 0.010;
+  if(z===7) return 0.006;
+  return 0.003;
+}
 
-  // Los drenajes se renderizan en el servidor del IDEAM.
-  // Así no dependemos del límite de 1000 entidades por consulta.
+async function queryPrincipalIds(bounds){
+  const u=new URL(URLS.ideamMain+"/query");
+  u.searchParams.set("where","1=1");
+  u.searchParams.set("geometry",`${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`);
+  u.searchParams.set("geometryType","esriGeometryEnvelope");
+  u.searchParams.set("inSR","4326");
+  u.searchParams.set("spatialRel","esriSpatialRelIntersects");
+  u.searchParams.set("returnIdsOnly","true");
+  u.searchParams.set("f","json");
+
+  const r=await fetch(u.toString());
+  if(!r.ok) throw new Error(`IDEAM IDs ${r.status}`);
+  const j=await r.json();
+  if(j.error) throw new Error(j.error.message || "IDEAM IDs");
+  return j.objectIds || [];
+}
+
+async function queryPrincipalBatch(ids){
+  const u=new URL(URLS.ideamMain+"/query");
+  u.searchParams.set("objectIds",ids.join(","));
+  u.searchParams.set("outFields","objectid,nombre_geografico");
+  u.searchParams.set("returnGeometry","true");
+  u.searchParams.set("outSR","4326");
+  u.searchParams.set("maxAllowableOffset",String(principalGeneralization()));
+  u.searchParams.set("geometryPrecision","5");
+  u.searchParams.set("f","geojson");
+
+  const r=await fetch(u.toString());
+  if(!r.ok) throw new Error(`IDEAM batch ${r.status}`);
+  const j=await r.json();
+  if(j.error) throw new Error(j.error.message || "IDEAM batch");
+  return j;
+}
+
+function addPrincipalGeoJSON(gj,token){
+  if(token!==principalDrainLoadToken) return;
+
+  L.geoJSON(gj,{
+    style:{
+      color:"#2386c5",
+      weight:map.getZoom()<=5 ? 1.35 : 1.75,
+      opacity:map.getZoom()<=5 ? .82 : .90,
+      fillColor:"#2386c5",
+      fillOpacity:map.getZoom()<=5 ? .04 : .07
+    },
+    interactive:false
+  }).addTo(groups.drainMain);
+}
+
+async function renderPrincipalDrainages(){
+  const checkbox=document.querySelector('[data-layer="drainMain"]');
+  if(!checkbox?.checked) return;
+
+  const status=document.getElementById("drainStatus");
+  status?.classList.add("show");
+
+  const token=++principalDrainLoadToken;
   groups.drainMain.clearLayers();
-  groups.drainSmall.clearLayers();
 
-  mainDrainOverlay=L.imageOverlay(
-    drainageExportUrl(1),
-    bounds,
-    {opacity:.92,interactive:false,crossOrigin:false}
-  );
+  try{
+    // Consulta exactamente lo que está en pantalla y un pequeño margen.
+    // No depende de la escala de visualización configurada en el MapServer.
+    const bounds=map.getBounds().pad(.10);
+    const ids=await queryPrincipalIds(bounds);
+    if(token!==principalDrainLoadToken) return;
+
+    if(!ids.length){
+      console.warn("IDEAM: no se encontraron drenajes principales en esta vista.");
+      status?.classList.remove("show");
+      return;
+    }
+
+    // Pintar progresivamente: el primer lote aparece sin esperar a toda la consulta.
+    const batchSize=150;
+    const concurrency=4;
+    let cursor=0;
+
+    async function worker(){
+      while(cursor<ids.length && token===principalDrainLoadToken){
+        const start=cursor;
+        cursor+=batchSize;
+        const batch=ids.slice(start,start+batchSize);
+        try{
+          const gj=await queryPrincipalBatch(batch);
+          addPrincipalGeoJSON(gj,token);
+        }catch(err){
+          console.warn("Lote de drenajes principales",err);
+        }
+      }
+    }
+
+    await Promise.all(
+      Array.from({length:Math.min(concurrency,Math.ceil(ids.length/batchSize))},()=>worker())
+    );
+  }catch(err){
+    console.warn("Carga de drenajes principales",err);
+  }finally{
+    if(token===principalDrainLoadToken) status?.classList.remove("show");
+  }
+}
+
+function renderSimpleDrainages(){
+  const checkbox=document.querySelector('[data-layer="drainSmall"]');
+  groups.drainSmall.clearLayers();
+  if(!checkbox?.checked) return;
+
+  const bounds=map.getBounds();
   smallDrainOverlay=L.imageOverlay(
     drainageExportUrl(0),
     bounds,
     {opacity:.68,interactive:false,crossOrigin:false}
   );
-
-  mainDrainOverlay.addTo(groups.drainMain);
   smallDrainOverlay.addTo(groups.drainSmall);
+}
+
+function renderDrainages(){
+  renderPrincipalDrainages();
+  renderSimpleDrainages();
 }
 
 function scheduleDrainageReload(){
   clearTimeout(drainageReloadTimer);
-  drainageReloadTimer=setTimeout(renderDrainages,180);
+  drainageReloadTimer=setTimeout(renderDrainages,220);
 }
 
 // Consulta puntual para identificar el drenaje al hacer clic.
@@ -247,6 +463,7 @@ map.on("click",async e=>{
     console.warn("Identificación de drenaje",err);
   }
 });
+
 
 async function loadAquifer(){
  try{const gj=await queryGeoJSON(URLS.aquifer,{where:"sis_acu = 'Valle Medio Del Magdalena'",outFields:"sis_acu"});L.geoJSON(gj,{style:{color:"#37b7c8",weight:1.4,dashArray:"5 4",fillColor:"#37b7c8",fillOpacity:.16},onEachFeature:(f,l)=>l.bindTooltip("Sistema acuífero · Valle Medio del Magdalena")}).addTo(groups.aquifer)}catch(e){console.warn("Acuífero",e)}
@@ -353,7 +570,119 @@ async function loadVmm(){
 }
 
 
+
+const BASIN_LABELS={
+ "VALLE MEDIO DEL MAGDALENA":"Valle Medio del Magdalena",
+ "VALLE INFERIOR DEL MAGDALENA":"Valle Inferior del Magdalena",
+ "VALLE SUPERIOR DEL MAGDALENA":"Valle Superior del Magdalena"
+};
+
+function fmtCount(n){
+  if(n===null || n===undefined || Number.isNaN(Number(n))) return "—";
+  return new Intl.NumberFormat("es-CO",{notation:Number(n)>=10000?"compact":"standard",maximumFractionDigits:1}).format(Number(n));
+}
+
+function setIndicatorLoading(name){
+  document.getElementById("indicatorBasin").textContent=BASIN_LABELS[name]||name;
+  ["indMain","indSmall","indGround","indBio"].forEach(id=>document.getElementById(id).textContent="…");
+}
+
+async function getBasinEsri(name){
+  const u=new URL(URLS.vmm+"/query");
+  u.searchParams.set("where",`NOMBRE = '${name}'`);
+  u.searchParams.set("outFields","NOMBRE");
+  u.searchParams.set("returnGeometry","true");
+  u.searchParams.set("outSR","4326");
+  u.searchParams.set("f","json");
+  const r=await fetch(u.toString());
+  if(!r.ok) throw new Error("Geometría de cuenca");
+  const j=await r.json();
+  return j.features?.[0]||null;
+}
+
+async function arcgisSpatialCount(base,geometry){
+  if(!geometry) return null;
+  const p=new URLSearchParams();
+  p.set("where","1=1");
+  p.set("geometry",JSON.stringify(geometry));
+  p.set("geometryType","esriGeometryPolygon");
+  p.set("inSR","4326");
+  p.set("spatialRel","esriSpatialRelIntersects");
+  p.set("returnCountOnly","true");
+  p.set("f","json");
+
+  const r=await fetch(base+"/query",{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+    body:p.toString()
+  });
+  if(!r.ok) throw new Error("Conteo espacial");
+  const j=await r.json();
+  return Number.isFinite(j.count)?j.count:null;
+}
+
+function boundsWktFromEsriGeometry(g){
+  const rings=g?.rings||[];
+  const pts=rings.flat();
+  if(!pts.length) return null;
+  let xmin=Infinity,ymin=Infinity,xmax=-Infinity,ymax=-Infinity;
+  pts.forEach(([x,y])=>{
+    xmin=Math.min(xmin,x); ymin=Math.min(ymin,y);
+    xmax=Math.max(xmax,x); ymax=Math.max(ymax,y);
+  });
+  return `POLYGON((${xmin} ${ymin},${xmax} ${ymin},${xmax} ${ymax},${xmin} ${ymax},${xmin} ${ymin}))`;
+}
+
+async function gbifCount(taxonKey,wkt){
+  if(!wkt) return null;
+  const u=new URL("https://api.gbif.org/v1/occurrence/search");
+  u.searchParams.set("taxon_key",String(taxonKey));
+  u.searchParams.set("geometry",wkt);
+  u.searchParams.set("has_coordinate","true");
+  u.searchParams.set("limit","0");
+  const r=await fetch(u.toString());
+  if(!r.ok) throw new Error("GBIF");
+  const j=await r.json();
+  return Number.isFinite(j.count)?j.count:null;
+}
+
+async function updateBasinIndicators(name){
+  setIndicatorLoading(name);
+  try{
+    const feature=await getBasinEsri(name);
+    if(!feature?.geometry) throw new Error("Sin geometría");
+
+    const geom=feature.geometry;
+    const wkt=boundsWktFromEsriGeometry(geom);
+
+    const [mainR,smallR,groundR,faunaR,floraR]=await Promise.allSettled([
+      arcgisSpatialCount(URLS.ideamMain,geom),
+      arcgisSpatialCount(URLS.ideamSmall,geom),
+      arcgisSpatialCount(URLS.aquifer,geom),
+      gbifCount(1,wkt),
+      gbifCount(6,wkt)
+    ]);
+
+    const main=mainR.status==="fulfilled"?mainR.value:null;
+    const small=smallR.status==="fulfilled"?smallR.value:null;
+    const ground=groundR.status==="fulfilled"?groundR.value:null;
+    const fauna=faunaR.status==="fulfilled"?faunaR.value:null;
+    const floraN=floraR.status==="fulfilled"?floraR.value:null;
+
+    document.getElementById("indMain").textContent=fmtCount(main);
+    document.getElementById("indSmall").textContent=fmtCount(small);
+    document.getElementById("indGround").textContent=ground===null?"—":(ground>0?"Presente":"No detectada");
+    document.getElementById("indBio").textContent=
+      fauna===null && floraN===null ? "—" :
+      `${fmtCount(fauna)} / ${fmtCount(floraN)}`;
+  }catch(e){
+    console.warn("Indicadores",e);
+    ["indMain","indSmall","indGround","indBio"].forEach(id=>document.getElementById(id).textContent="—");
+  }
+}
+
 async function viewBasinByName(name){
+ updateBasinIndicators(name);
  try{
   focusBasinGroup.clearLayers();
   const gj=await queryGeoJSON(URLS.vmm,{where:`NOMBRE = '${name}'`,outFields:"NOMBRE"});
@@ -385,12 +714,21 @@ const external={fauna,flora};
 function setVisible(name,visible){const l=groups[name]||external[name];if(!l)return;if(visible){if(!map.hasLayer(l))l.addTo(map)}else if(map.hasLayer(l))map.removeLayer(l)}
 document.querySelectorAll("[data-layer]").forEach(cb=>cb.addEventListener("change",()=>{
  setVisible(cb.dataset.layer,cb.checked);
- if(cb.checked && (cb.dataset.layer==="drainMain" || cb.dataset.layer==="drainSmall")){
-   renderDrainages();
+
+ if(cb.dataset.layer==="drainMain"){
+   principalDrainLoadToken++;
+   if(cb.checked) renderPrincipalDrainages();
+   else groups.drainMain.clearLayers();
+ }
+
+ if(cb.dataset.layer==="drainSmall"){
+   if(cb.checked) renderSimpleDrainages();
+   else groups.drainSmall.clearLayers();
  }
 }));
 function preset(active){document.querySelectorAll("[data-layer]").forEach(cb=>{cb.checked=active.includes(cb.dataset.layer);setVisible(cb.dataset.layer,cb.checked)})}
 document.getElementById("reset").onclick=()=>{
+ updateBasinIndicators("VALLE MEDIO DEL MAGDALENA");
  focusBasinGroup.clearLayers();
  if(vmmBounds && vmmBounds.isValid()){
   map.fitBounds(vmmBounds.pad(.035),{
@@ -405,6 +743,22 @@ document.getElementById("reset").onclick=()=>{
   map.setView(INITIAL_CENTER,INITIAL_ZOOM);
  }
 };
+
+document.getElementById("viewColombia").onclick=()=>{
+  focusBasinGroup.clearLayers();
+  document.getElementById("indicatorBasin").textContent="Selecciona una cuenca";
+  ["indMain","indSmall","indGround","indBio"].forEach(id=>document.getElementById(id).textContent="—");
+  map.fitBounds([[-4.3,-79.2],[12.2,-66.6]],{
+    paddingTopLeft:[18,18],
+    paddingBottomRight:[305,18],
+    maxZoom:5,
+    animate:true
+  });
+  setTimeout(()=>{
+      scheduleDrainageReload();
+  },250);
+};
+
 document.getElementById("viewVim").onclick=()=>viewBasinByName("VALLE INFERIOR DEL MAGDALENA");
 document.getElementById("viewVsm").onclick=()=>viewBasinByName("VALLE SUPERIOR DEL MAGDALENA");
 document.getElementById("onlyBio").onclick=()=>preset(["fauna","flora","kale","platero"]);
@@ -420,7 +774,12 @@ map.on("zoomend",()=>{
 });
 
 Promise.allSettled([loadAquifer(),loadCepi(),loadVmm()]);
-scheduleDrainageReload();
+updateBasinIndicators("VALLE MEDIO DEL MAGDALENA");
+
+// La carga principal ya no depende del minScale del servicio:
+ // se consulta como vector en la vista activa desde el inicio.
+setTimeout(renderPrincipalDrainages,350);
+setTimeout(renderSimpleDrainages,500);
 </script>
 </body>
 </html>
