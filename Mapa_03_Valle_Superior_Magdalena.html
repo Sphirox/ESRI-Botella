@@ -11,7 +11,7 @@
 *{box-sizing:border-box}html,body{height:100%;margin:0}body{font-family:Inter,"Avenir Next",Avenir,Arial,sans-serif;overflow:hidden;background:#17383d;color:var(--ink)}#map{position:absolute;inset:0}
 .panel{position:absolute;right:16px;top:16px;z-index:900;width:min(278px,calc(100vw - 32px));background:rgba(247,244,237,.90);backdrop-filter:blur(12px) saturate(115%);-webkit-backdrop-filter:blur(12px) saturate(115%);border:1px solid rgba(255,255,255,.58);border-radius:16px;box-shadow:0 16px 42px rgba(9,34,31,.22);padding:13px}
 .panel h1{margin:0 0 3px;font-size:14px;font-weight:760}.panel .sub{margin:0 0 9px;font-size:9.5px;color:var(--muted)}.group{display:grid;gap:3px}.layer-row{display:grid;grid-template-columns:18px 18px 1fr;align-items:center;gap:7px;min-height:29px;padding:4px 6px;border-radius:9px;transition:.15s}.layer-row:hover{background:rgba(255,255,255,.65)}.layer-row input{width:14px;height:14px;margin:0;accent-color:var(--ink)}.symbol{width:17px;height:11px;border-radius:3px}.symbol.line-main{height:4px;border-radius:4px;background:var(--water)}.symbol.line-small{height:2px;border-radius:4px;background:var(--water2)}.symbol.aquifer{background:rgba(55,183,200,.28);border:1.5px solid rgba(55,183,200,.92)}.symbol.fauna{background:linear-gradient(90deg,#f4d27a,#e0833f,#b64e32)}.symbol.flora{background:linear-gradient(90deg,#cbe7b8,#66a85c,#286d42)}.symbol.kale{background:rgba(214,84,61,.25);border:2px solid var(--kale)}.symbol.platero{background:rgba(113,86,165,.24);border:2px solid var(--platero)}.symbol.vmm{background:rgba(243,230,199,.32);border:1.5px dashed #efe7d5}.sep{height:1px;background:var(--line);margin:8px 2px}.actions{display:flex;gap:6px;flex-wrap:wrap}button{border:1px solid var(--line);background:rgba(255,255,255,.67);color:var(--ink);border-radius:9px;padding:6px 8px;font-size:9.5px;font-weight:650;cursor:pointer}button:hover{background:#fff}.note{margin-top:8px;font-size:8.2px;line-height:1.3;color:#7c8884}
-.cepi-label{padding:5px 7px;border-radius:8px;background:rgba(247,244,237,.94);box-shadow:0 6px 18px rgba(12,38,34,.16);font-size:10px;font-weight:760;white-space:nowrap}.gbif-key{position:absolute;left:12px;bottom:138px;z-index:800;display:flex;gap:6px;padding:6px 8px;background:rgba(20,42,40,.72);color:#fff;border-radius:9px;font-size:8px;backdrop-filter:blur(8px)}.gbif-key span{opacity:.88}.leaflet-control-zoom a{width:28px!important;height:28px!important;line-height:28px!important;font-size:16px!important}.leaflet-control-attribution{font-size:7.5px!important;background:rgba(255,255,255,.60)!important}
+.cepi-label{padding:5px 7px;border-radius:8px;background:rgba(247,244,237,.94);box-shadow:0 6px 18px rgba(12,38,34,.16);font-size:10px;font-weight:760;white-space:nowrap}.gbif-key{position:absolute;left:12px;bottom:138px;z-index:800;display:flex;gap:6px;padding:6px 8px;background:rgba(20,42,40,.72);color:#fff;border-radius:9px;font-size:9px;backdrop-filter:blur(8px)}.gbif-key span{opacity:.88}.leaflet-control-zoom a{width:28px!important;height:28px!important;line-height:28px!important;font-size:16px!important}.leaflet-control-attribution{font-size:7.5px!important;background:rgba(255,255,255,.60)!important}
 
 .map-callout-wrap{position:relative;width:0;height:0;pointer-events:none}
 .map-callout{position:absolute;top:-13px;min-width:max-content;padding:5px 8px;background:rgba(247,244,237,.95);border:1px solid rgba(22,58,52,.14);border-radius:8px;box-shadow:0 5px 15px rgba(13,40,36,.15);color:#173c36;font-size:9.5px;font-weight:760;line-height:1;white-space:nowrap}
@@ -61,7 +61,7 @@
   grid-template-columns:repeat(5,minmax(0,1fr));
   gap:8px;
 }
-.bottom-indicator-card{
+.bottom-indicator-card{display:flex;flex-direction:column;justify-content:center;
   min-width:0;
   background:rgba(255,255,255,.72);
   border:1px solid rgba(22,58,52,.10);
@@ -70,7 +70,7 @@
 }
 .bottom-indicator-value{
   display:block;
-  font-size:26px;
+  font-size:27px;
   line-height:1;
   font-weight:800;
   color:var(--ink);
@@ -78,13 +78,14 @@
 }
 .bottom-indicator-label{
   display:block;
-  font-size:10.5px;
-  line-height:1.15;
+  font-size:12.2px;
+  line-height:1.22;
   color:var(--muted);
+  font-weight:650;
 }
 .bottom-indicators-note{
   margin-top:6px;
-  font-size:8px;
+  font-size:9px;
   color:#7d8884;
   text-align:right;
 }
@@ -98,6 +99,48 @@
 .flow-arrow{width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#4bb4e6;font-size:27px;font-weight:900;text-shadow:0 1px 4px rgba(0,0,0,.55);transform-origin:center center}
 .flow-label{padding:6px 9px;border-radius:9px;background:rgba(247,244,237,.94);border:1px solid rgba(22,58,52,.13);box-shadow:0 6px 18px rgba(12,38,34,.16);font-size:9.5px;font-weight:760;line-height:1.2;white-space:nowrap;color:#173c36}
 
+
+.info-btn{
+  width:20px;height:20px;border-radius:999px;border:1px solid rgba(22,58,52,.18);
+  background:rgba(255,255,255,.76);color:#28534b;font-size:11px;font-weight:800;
+  line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 2px 8px rgba(18,49,44,.10);padding:0;transition:.15s
+}
+.info-btn:hover,.info-btn:focus{background:#fff;transform:translateY(-1px);outline:none}
+.layer-name{display:block}
+.layer-row{grid-template-columns:18px 18px 1fr 22px}
+.info-pop{
+  position:fixed;z-index:1100;max-width:260px;background:rgba(247,244,237,.98);
+  border:1px solid rgba(22,58,52,.14);border-radius:12px;box-shadow:0 16px 40px rgba(10,35,31,.24);
+  padding:10px 12px 10px;display:none
+}
+.info-pop.show{display:block}
+.info-pop-title{font-size:12px;font-weight:800;color:var(--ink);margin-bottom:4px}
+.info-pop-text{font-size:11px;line-height:1.35;color:#35534d}
+.info-pop-close{
+  position:absolute;right:6px;top:6px;background:transparent;border:0;font-size:16px;line-height:1;
+  cursor:pointer;color:#4f655f
+}
+.welcome-modal{
+  position:fixed;inset:0;z-index:1200;display:none;align-items:center;justify-content:center;
+  background:rgba(8,24,22,.42);padding:18px
+}
+.welcome-modal.show{display:flex}
+.welcome-card{
+  width:min(560px,100%);background:rgba(247,244,237,.98);border-radius:18px;
+  border:1px solid rgba(255,255,255,.60);box-shadow:0 20px 48px rgba(10,35,31,.28);
+  padding:18px 18px 14px;color:var(--ink)
+}
+.welcome-kicker{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#58726b;font-weight:800;margin-bottom:4px}
+.welcome-title{font-size:22px;line-height:1.05;margin:0 0 10px 0}
+.welcome-text{font-size:13px;line-height:1.45;color:#35534d;margin:0 0 10px 0}
+.welcome-list{margin:0 0 12px 18px;padding:0;color:#35534d;font-size:12.5px;line-height:1.45}
+.welcome-actions{display:flex;justify-content:flex-end}
+.welcome-btn{
+  border:1px solid rgba(22,58,52,.16);background:linear-gradient(180deg,#ffffff,#eef3f1);
+  color:var(--ink);padding:9px 14px;border-radius:11px;font-weight:800;cursor:pointer
+}
+
 @media(max-width:720px){
 .panel{top:10px;right:10px;left:auto;bottom:auto;width:min(250px,calc(100vw - 20px));max-height:40vh;overflow:auto}
 .panel .sub,.note{display:none}
@@ -106,50 +149,70 @@
 .bottom-indicators{left:10px;right:10px;bottom:10px;transform:none;width:auto}
 .bottom-indicator-grid{grid-template-columns:1fr 1fr}
 .bottom-indicator-value{font-size:18px}
-.bottom-indicator-label{font-size:8.8px}
+.bottom-indicator-label{font-size:10px;line-height:1.18}
 .bottom-indicators-note{display:none}
 }
 </style>
 </head>
 <body>
 <div id="map"></div>
+
+<div id="infoPopup" class="info-pop" role="dialog" aria-modal="false" aria-live="polite">
+  <button id="infoPopupClose" class="info-pop-close" type="button" aria-label="Cerrar">×</button>
+  <div class="info-pop-title" id="infoPopupTitle">Información de capa</div>
+  <div class="info-pop-text" id="infoPopupText"></div>
+</div>
+<div id="welcomeModal" class="welcome-modal show" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+  <div class="welcome-card">
+    <div class="welcome-kicker">Bienvenido</div>
+    <h2 class="welcome-title" id="welcomeTitle">Valle Superior del Magdalena</h2>
+    <p class="welcome-text">Este mapa reúne información territorial y ambiental para explorar la cuenca, la red de drenajes, la biodiversidad, el agua subterránea y las áreas de interés.</p>
+    <ul class="welcome-list">
+      <li>Activa o desactiva capas desde el panel de la derecha.</li>
+      <li>Usa los botones para cambiar rápidamente de cuenca o resaltar temas como biodiversidad y agua.</li>
+      <li>Consulta los indicadores inferiores para comparar drenajes, agua subterránea, fauna y flora.</li>
+    </ul>
+    <div class="welcome-actions"><button id="welcomeClose" class="welcome-btn" type="button">Entendido</button></div>
+  </div>
+</div>
+
 <div id="drainStatus" class="drain-status">Cargando drenajes principales…</div>
 <aside class="panel">
   <h1>Capas del territorio</h1><p class="sub">Activa o desactiva información.</p>
   <div class="group">
-    <label class="layer-row"><input type="checkbox" data-layer="drainMain" checked><span class="symbol line-main"></span><span>Drenajes principales</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="drainSmall"><span class="symbol line-small"></span><span>Drenajes sencillos</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="aquifer"><span class="symbol aquifer"></span><span>Aguas subterráneas</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="fauna" checked><span class="symbol fauna"></span><span>Fauna · GBIF</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="flora" checked><span class="symbol flora"></span><span>Flora · GBIF</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="kale" checked><span class="symbol kale"></span><span>CEPI Kalé</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="platero" checked><span class="symbol platero"></span><span>CEPI Platero</span></label>
-    <label class="layer-row"><input type="checkbox" data-layer="vmm" checked><span class="symbol vmm"></span><span>Cuenca VMM</span></label>
+    <label class="layer-row"><input type="checkbox" data-layer="drainMain" checked><span class="symbol line-main"></span><span class="layer-name">Drenajes principales</span><button type="button" class="info-btn" data-info-title="Drenajes principales" data-info-text="Ríos y cauces principales representados a partir del servicio de hidrografía del IDEAM." aria-label="Información sobre Drenajes principales">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="drainSmall"><span class="symbol line-small"></span><span class="layer-name">Drenajes sencillos</span><button type="button" class="info-btn" data-info-title="Drenajes sencillos" data-info-text="Red hídrica secundaria y de menor jerarquía, útil para comprender el detalle de la conectividad hídrica." aria-label="Información sobre Drenajes sencillos">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="aquifer"><span class="symbol aquifer"></span><span class="layer-name">Aguas subterráneas</span><button type="button" class="info-btn" data-info-title="Aguas subterráneas" data-info-text="Información hidrogeológica asociada a agua subterránea o unidades relacionadas con acuíferos." aria-label="Información sobre Aguas subterráneas">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="fauna" checked><span class="symbol fauna"></span><span class="layer-name">Fauna · GBIF</span><button type="button" class="info-btn" data-info-title="Fauna · GBIF" data-info-text="Registros de ocurrencia de fauna provenientes de GBIF. Representan observaciones/reportes, no abundancia." aria-label="Información sobre Fauna · GBIF">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="flora" checked><span class="symbol flora"></span><span class="layer-name">Flora · GBIF</span><button type="button" class="info-btn" data-info-title="Flora · GBIF" data-info-text="Registros de ocurrencia de flora provenientes de GBIF. Representan observaciones/reportes, no abundancia." aria-label="Información sobre Flora · GBIF">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="kale" checked><span class="symbol kale"></span><span class="layer-name">CEPI Kalé</span><button type="button" class="info-btn" data-info-title="CEPI Kalé" data-info-text="Área asociada al proyecto piloto CEPI Kalé, incluida como referencia territorial de interés." aria-label="Información sobre CEPI Kalé">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="platero" checked><span class="symbol platero"></span><span class="layer-name">CEPI Platero</span><button type="button" class="info-btn" data-info-title="CEPI Platero" data-info-text="Área asociada al proyecto piloto CEPI Platero, incluida como referencia territorial de interés." aria-label="Información sobre CEPI Platero">?</button></label>
+    <label class="layer-row"><input type="checkbox" data-layer="vmm" checked><span class="symbol vmm"></span><span class="layer-name">Cuenca VSM</span><button type="button" class="info-btn" data-info-title="Cuenca VSM" data-info-text="Polígono de referencia de la cuenca Valle Superior del Magdalena, usado como marco espacial principal del mapa." aria-label="Información sobre Cuenca VSM">?</button></label>
   </div>
   <div class="sep"></div>
   <div class="actions">
   <button id="viewColombia">Colombia</button>
-  <button id="reset">Valle Medio</button>
+  <button id="reset">Valle Superior</button>
   <button id="viewVim">Valle Inferior</button>
   <button id="viewVsm">Valle Superior</button>
   <button id="onlyBio">Biodiversidad</button>
   <button id="onlyWater">Agua</button>
 </div>
-  <div class="note">Activa capas y cambia de cuenca con los botones. Las flechas muestran el sentido general del flujo; no provienen de un campo direccional del servicio IDEAM.</div>
+  <div class="note">Usa los botones para cambiar de cuenca o resaltar temas. El signo “?” explica cada capa.</div>
 </aside>
 <div class="bottom-indicators" id="indicators">
   <div class="bottom-indicators-head">
     <span class="bottom-indicators-title">Indicadores de cuenca</span>
-    <span class="bottom-indicators-basin" id="indicatorBasin">Valle Medio del Magdalena</span>
+    <span class="bottom-indicators-basin" id="indicatorBasin">Valle Superior del Magdalena</span>
   </div>
   <div class="bottom-indicator-grid">
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indMain">—</span><span class="bottom-indicator-label">Drenajes principales</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indSmall">—</span><span class="bottom-indicator-label">Drenajes sencillos</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indGround">—</span><span class="bottom-indicator-label">Agua subterránea</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFauna">—</span><span class="bottom-indicator-label">Registros GBIF · fauna*</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFlora">—</span><span class="bottom-indicator-label">Registros GBIF · flora*</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indMain">—</span><span class="bottom-indicator-label">Drenajes<br>principales</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indSmall">—</span><span class="bottom-indicator-label">Drenajes<br>sencillos</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indGround">—</span><span class="bottom-indicator-label">Agua<br>subterránea</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFauna">—</span><span class="bottom-indicator-label">Registros Fauna<br>GBIF</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFlora">—</span><span class="bottom-indicator-label">Registros Flora<br>GBIF</span></div>
   </div>
-  <div class="bottom-indicators-note">*Registros de ocurrencia en el entorno de la cuenca; no equivalen a abundancia.</div>
+  
 </div>
 <div class="gbif-key"><span>● Flora: verdes</span><span>● Fauna: cálidos</span></div>
 <script>
@@ -804,6 +867,51 @@ map.on("zoomend",()=>{
    if(map.hasLayer(calloutGroup))map.removeLayer(calloutGroup);
  }
 });
+
+
+function closeInfoPopup(){
+  document.getElementById("infoPopup")?.classList.remove("show");
+}
+function openInfoPopup(btn){
+  const pop=document.getElementById("infoPopup");
+  const title=btn.dataset.infoTitle || "Información de capa";
+  const text=btn.dataset.infoText || "";
+  document.getElementById("infoPopupTitle").textContent=title;
+  document.getElementById("infoPopupText").textContent=text;
+
+  const rect=btn.getBoundingClientRect();
+  pop.style.left = Math.min(window.innerWidth - 280, Math.max(10, rect.right - 250)) + "px";
+  pop.style.top = Math.min(window.innerHeight - 140, rect.top + 24) + "px";
+  pop.classList.add("show");
+}
+function initUiHelpers(){
+  document.querySelectorAll(".info-btn").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      openInfoPopup(btn);
+    });
+  });
+
+  document.getElementById("infoPopupClose")?.addEventListener("click",(e)=>{
+    e.preventDefault();
+    closeInfoPopup();
+  });
+
+  document.addEventListener("click",(e)=>{
+    const pop=document.getElementById("infoPopup");
+    if(pop?.classList.contains("show") && !pop.contains(e.target) && !e.target.classList.contains("info-btn")){
+      closeInfoPopup();
+    }
+  });
+
+  const welcome=document.getElementById("welcomeModal");
+  document.getElementById("welcomeClose")?.addEventListener("click",()=>welcome?.classList.remove("show"));
+  welcome?.addEventListener("click",(e)=>{
+    if(e.target===welcome) welcome.classList.remove("show");
+  });
+}
+initUiHelpers();
 
 Promise.allSettled([loadAquifer(),loadCepi(),loadVmm()]);
 updateBasinIndicators("VALLE MEDIO DEL MAGDALENA");
