@@ -240,7 +240,9 @@ L.tileLayer(
 
 // Leyenda personalizada
 const legend = document.getElementById("legend");
-basinStyles.forEach(b=>{
+basinStyles
+  .filter(b=>b.name!=="CESAR-RANCHERIA")
+  .forEach(b=>{
   const item=document.createElement("div");
   item.className="legend-item";
   item.dataset.name=b.name;
