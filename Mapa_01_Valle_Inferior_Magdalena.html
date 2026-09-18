@@ -206,11 +206,11 @@
     <span class="bottom-indicators-basin" id="indicatorBasin">Valle Inferior del Magdalena</span>
   </div>
   <div class="bottom-indicator-grid">
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indMain">—</span><span class="bottom-indicator-label">Drenajes<br>principales</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indSmall">—</span><span class="bottom-indicator-label">Drenajes<br>sencillos</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indGround">—</span><span class="bottom-indicator-label">Agua<br>subterránea</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFauna">—</span><span class="bottom-indicator-label">Registros Fauna<br>GBIF</span></div>
-    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFlora">—</span><span class="bottom-indicator-label">Registros Flora<br>GBIF</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indMain">162</span><span class="bottom-indicator-label">Drenajes<br>principales</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indSmall">10,2 k</span><span class="bottom-indicator-label">Drenajes<br>sencillos</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indGround">Presente</span><span class="bottom-indicator-label">Agua<br>subterránea</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFauna">1,2 M</span><span class="bottom-indicator-label">Registros Fauna<br>GBIF</span></div>
+    <div class="bottom-indicator-card"><span class="bottom-indicator-value" id="indFlora">388,4 k</span><span class="bottom-indicator-label">Registros Flora<br>GBIF</span></div>
   </div>
   
 </div>
@@ -743,37 +743,12 @@ async function gbifCount(taxonKey,wkt){
 }
 
 async function updateBasinIndicators(name){
-  setIndicatorLoading(name);
-  try{
-    const feature=await getBasinEsri(name);
-    if(!feature?.geometry) throw new Error("Sin geometría");
-
-    const geom=feature.geometry;
-    const wkt=boundsWktFromEsriGeometry(geom);
-
-    const [mainR,smallR,groundR,faunaR,floraR]=await Promise.allSettled([
-      arcgisSpatialCount(URLS.ideamMain,geom),
-      arcgisSpatialCount(URLS.ideamSmall,geom),
-      arcgisSpatialCount(URLS.aquifer,geom),
-      gbifCount(1,wkt),
-      gbifCount(6,wkt)
-    ]);
-
-    const main=mainR.status==="fulfilled"?mainR.value:null;
-    const small=smallR.status==="fulfilled"?smallR.value:null;
-    const ground=groundR.status==="fulfilled"?groundR.value:null;
-    const fauna=faunaR.status==="fulfilled"?faunaR.value:null;
-    const floraN=floraR.status==="fulfilled"?floraR.value:null;
-
-    document.getElementById("indMain").textContent=fmtCount(main);
-    document.getElementById("indSmall").textContent=fmtCount(small);
-    document.getElementById("indGround").textContent=ground===null?"—":(ground>0?"Presente":"No detectada");
-    document.getElementById("indFauna").textContent=fmtCount(fauna);
-    document.getElementById("indFlora").textContent=fmtCount(floraN);
-  }catch(e){
-    console.warn("Indicadores",e);
-    ["indMain","indSmall","indGround","indFauna","indFlora"].forEach(id=>document.getElementById(id).textContent="—");
-  }
+  document.getElementById("indicatorBasin").textContent="Valle Inferior del Magdalena";
+  document.getElementById("indMain").textContent="162";
+  document.getElementById("indSmall").textContent="10,2 k";
+  document.getElementById("indGround").textContent="Presente";
+  document.getElementById("indFauna").textContent="1,2 M";
+  document.getElementById("indFlora").textContent="388,4 k";
 }
 
 async function viewBasinByName(name){
@@ -841,8 +816,12 @@ document.getElementById("reset").onclick=()=>{
 
 document.getElementById("viewColombia").onclick=()=>{
   focusBasinGroup.clearLayers();
-  document.getElementById("indicatorBasin").textContent="Selecciona una cuenca";
-  ["indMain","indSmall","indGround","indFauna","indFlora"].forEach(id=>document.getElementById(id).textContent="—");
+  document.getElementById("indicatorBasin").textContent="Valle Inferior del Magdalena";
+  document.getElementById("indMain").textContent="162";
+  document.getElementById("indSmall").textContent="10,2 k";
+  document.getElementById("indGround").textContent="Presente";
+  document.getElementById("indFauna").textContent="1,2 M";
+  document.getElementById("indFlora").textContent="388,4 k";
   map.fitBounds([[-4.3,-79.2],[12.2,-66.6]],{
     paddingTopLeft:[18,18],
     paddingBottomRight:[305,18],
